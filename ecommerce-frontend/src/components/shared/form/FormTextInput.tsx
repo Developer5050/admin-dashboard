@@ -16,6 +16,8 @@ type FormTextInputProps<TFormData extends FieldValues> = {
   placeholder: string;
   type?: React.HTMLInputTypeAttribute;
   required?: boolean;
+  minValue?: number;
+  maxValue?: number;
 };
 
 function FormTextInput<TFormData extends FieldValues>({
@@ -25,6 +27,8 @@ function FormTextInput<TFormData extends FieldValues>({
   placeholder,
   type,
   required,
+  minValue,
+  maxValue,
 }: FormTextInputProps<TFormData>) {
   return (
     <FormField
@@ -43,10 +47,39 @@ function FormTextInput<TFormData extends FieldValues>({
                 className="h-12"
                 type={type}
                 placeholder={placeholder}
+                min={type === "number" ? (minValue ?? 0) : undefined}
+                max={type === "number" ? maxValue : undefined}
                 onFocus={
                   type === "number" ? (e) => e.target.select() : undefined
                 }
                 {...field}
+                onChange={(e) => {
+                  if (type === "number") {
+                    const value = e.target.value;
+                    // Allow empty string (for clearing the field)
+                    if (value === "") {
+                      field.onChange(e);
+                      return;
+                    }
+                    // Prevent negative values - block if contains minus sign
+                    if (value.includes("-")) {
+                      return;
+                    }
+                    // Allow valid positive numbers and zero
+                    const numValue = parseFloat(value);
+                    if (!isNaN(numValue) && numValue >= 0) {
+                      field.onChange(e);
+                    }
+                  } else {
+                    field.onChange(e);
+                  }
+                }}
+                onKeyDown={(e) => {
+                  // Prevent minus key and 'e' key for number inputs
+                  if (type === "number" && (e.key === "-" || e.key === "e" || e.key === "E")) {
+                    e.preventDefault();
+                  }
+                }}
               />
             </FormControl>
 

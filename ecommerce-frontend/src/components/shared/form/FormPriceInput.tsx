@@ -15,6 +15,9 @@ type FormPriceInputProps<TFormData extends FieldValues> = {
   label: string;
   placeholder: string;
   required?: boolean;
+  minValue?: number;
+  maxValue?: number;
+  step?: number;
 };
 
 function FormPriceInput<TFormData extends FieldValues>({
@@ -23,6 +26,9 @@ function FormPriceInput<TFormData extends FieldValues>({
   label,
   placeholder,
   required,
+  minValue,
+  maxValue,
+  step,
 }: FormPriceInputProps<TFormData>) {
   return (
     <FormField
@@ -45,9 +51,35 @@ function FormPriceInput<TFormData extends FieldValues>({
                 <Input
                   type="number"
                   className="h-12 pl-14"
+                  min={minValue ?? 0}
+                  max={maxValue}
+                  step={step}
                   onFocus={(e) => e.target.select()}
                   placeholder={placeholder}
                   {...field}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Allow empty string (for clearing the field)
+                    if (value === "") {
+                      field.onChange(e);
+                      return;
+                    }
+                    // Prevent negative values - block if contains minus sign
+                    if (value.includes("-")) {
+                      return;
+                    }
+                    // Allow valid positive numbers and zero
+                    const numValue = parseFloat(value);
+                    if (!isNaN(numValue) && numValue >= 0) {
+                      field.onChange(e);
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    // Prevent minus key
+                    if (e.key === "-" || e.key === "e" || e.key === "E") {
+                      e.preventDefault();
+                    }
+                  }}
                 />
               </div>
             </FormControl>

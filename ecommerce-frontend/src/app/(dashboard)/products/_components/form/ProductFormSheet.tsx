@@ -231,6 +231,7 @@ export default function ProductFormSheet({
                     label="Cost Price"
                     placeholder="Original Price"
                     required
+                    minValue={0}
                   />
 
                   <FormPriceInput
@@ -239,6 +240,7 @@ export default function ProductFormSheet({
                     label="Sale Price"
                     placeholder="Sale Price"
                     required
+                    minValue={0}
                   />
 
                   <FormTextInput
@@ -248,6 +250,7 @@ export default function ProductFormSheet({
                     placeholder="Product Quantity"
                     type="number"
                     required
+                    maxValue={999999}
                   />
 
                   <FormTextInput

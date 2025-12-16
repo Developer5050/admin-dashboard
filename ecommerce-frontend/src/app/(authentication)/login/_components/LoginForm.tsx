@@ -1,13 +1,14 @@
 "use client";
 
 import axios from "axios";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { EyeOff, Eye } from 'lucide-react';
 
 import {
   Form,
@@ -32,14 +33,27 @@ export default function LoginForm() {
   const queryClient = useQueryClient();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Get email from URL params first (for autofill from signup)
+  const emailFromUrl = searchParams.get("email");
 
   const form = useForm<FormData>({
     resolver: zodResolver(loginFormSchema),
     defaultValues: {
-      email: "",
+      email: emailFromUrl ? decodeURIComponent(emailFromUrl) : "",
       password: "",
     },
   });
+
+  // Autofill email from URL params (when coming from signup) - update if URL changes
+  useEffect(() => {
+    const emailParam = searchParams.get("email");
+    if (emailParam) {
+      const decodedEmail = decodeURIComponent(emailParam);
+      form.setValue("email", decodedEmail, { shouldValidate: false });
+    }
+  }, [searchParams, form]);
 
   const { mutate, isPending, isSuccess } = useMutation({
     mutationFn: async (formData: FormData) => {
@@ -98,27 +112,55 @@ export default function LoginForm() {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {loginFields.map((formField) => (
-            <FormField
-              key={`form-field-${formField.name}`}
-              control={form.control}
-              name={formField.name}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{formField.label}</FormLabel>
-                  <FormControl>
-                    <Input
-                      type={formField.inputType}
-                      placeholder={formField.placeholder}
-                      autoComplete={formField.autoComplete}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          ))}
+          {loginFields.map((formField) => {
+            const isPassword = formField.name === "password";
+
+            return (
+              <FormField
+                key={`form-field-${formField.name}`}
+                control={form.control}
+                name={formField.name}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{formField.label}</FormLabel>
+                    <FormControl>
+                      {isPassword ? (
+                        <div className="relative">
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            placeholder={formField.placeholder}
+                            autoComplete={formField.autoComplete}
+                            className="pr-10"
+                            {...field}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                            tabIndex={-1}
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
+                      ) : (
+                        <Input
+                          type={formField.inputType}
+                          placeholder={formField.placeholder}
+                          autoComplete={formField.autoComplete}
+                          {...field}
+                        />
+                      )}
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            );
+          })}
 
           <FormSubmitButton isPending={isPending} className="w-full">
             Login
