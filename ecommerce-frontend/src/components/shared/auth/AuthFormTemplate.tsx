@@ -6,6 +6,9 @@ type Props = {
 };
 
 export default function AuthFormTemplate({ image, children }: Props) {
+  // Check if image is StaticImageData (has blurDataURL) or string
+  const isStaticImage = typeof image !== "string" && "blurDataURL" in image;
+
   return (
     <section>
       <div className="p-6 min-h-dvh flex items-center">
@@ -14,7 +17,8 @@ export default function AuthFormTemplate({ image, children }: Props) {
             <Image
               src={image}
               alt=""
-              placeholder="blur"
+              placeholder={isStaticImage ? "blur" : "empty"}
+              blurDataURL={isStaticImage ? (image as StaticImageData).blurDataURL : undefined}
               className="w-full object-cover object-center brightness-90"
               fill
             />

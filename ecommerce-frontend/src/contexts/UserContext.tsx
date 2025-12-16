@@ -50,14 +50,9 @@ export function UserProvider({
       try {
         const response = await fetch("/auth/me", {
           credentials: "include",
-          cache: "no-store",
         });
 
         if (!response.ok) {
-          // If 401, the token is invalid/expired - clear any stale data
-          if (response.status === 401) {
-            console.warn("User session expired or invalid");
-          }
           return { user: null, profile: null };
         }
 

@@ -9,9 +9,8 @@ export async function GET(request: NextRequest) {
     const token = request.cookies.get("token")?.value;
 
     if (!token) {
-      console.error("No token cookie found in request");
       return NextResponse.json(
-        { success: false, message: "No token provided. Please login again." },
+        { success: false, message: "No token provided" },
         { status: 401 }
       );
     }
@@ -29,25 +28,8 @@ export async function GET(request: NextRequest) {
     const data = await response.json();
 
     if (!response.ok) {
-      // If backend says unauthorized, clear the cookie on frontend too
-      if (response.status === 401) {
-        const errorResponse = NextResponse.json(
-          { success: false, message: data.message || "Unauthorized. Please login again." },
-          { status: 401 }
-        );
-        // Clear the token cookie
-        errorResponse.cookies.set("token", "", {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "strict",
-          path: "/",
-          maxAge: 0,
-        });
-        return errorResponse;
-      }
-      
       return NextResponse.json(
-        { success: false, message: data.message || "Failed to fetch user data" },
+        { success: false, message: data.message || "Unauthorized" },
         { status: response.status }
       );
     }
