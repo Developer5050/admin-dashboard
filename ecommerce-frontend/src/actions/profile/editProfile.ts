@@ -28,21 +28,6 @@ export async function editProfile(
 
   const { image, ...profileData } = parsedData.data;
 
-  // Handle image - convert File to base64 if it's a new file
-  let imageUrl: string | undefined = undefined;
-
-  if (image instanceof File && image.size > 0) {
-    // Convert file to base64
-    const arrayBuffer = await image.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    const base64Image = buffer.toString("base64");
-    const mimeType = image.type;
-    imageUrl = `data:${mimeType};base64,${base64Image}`;
-  } else if (typeof image === "string" && image) {
-    // If it's already a URL string, use it
-    imageUrl = image;
-  }
-
   try {
     // Get token from cookies
     const cookieStore = await cookies();
@@ -52,29 +37,39 @@ export async function editProfile(
       return { dbError: "Authentication required. Please login again." };
     }
 
-    // Prepare update data
-    const updateData: { name: string; phone?: string | null; image_url?: string | null } = {
-      name: profileData.name,
-    };
-
+    // Create FormData to send file directly (not base64)
+    const updateFormData = new FormData();
+    updateFormData.append("name", profileData.name);
+    
     if (profileData.phone !== undefined) {
-      updateData.phone = profileData.phone || null;
+      updateFormData.append("phone", profileData.phone || "");
     }
 
-    if (imageUrl !== undefined) {
-      updateData.image_url = imageUrl || null;
+    // Handle image - send file directly if it's a new file, or send URL/empty string
+    if (image instanceof File && image.size > 0) {
+      // Send file directly - backend will save it and return URL
+      updateFormData.append("image", image);
+    } else if (typeof image === "string" && image) {
+      // If it's already a URL string (existing image), send it as image_url
+      // Only send if it's not a base64 string (to avoid storing base64)
+      if (!image.startsWith('data:')) {
+        updateFormData.append("image_url", image);
+      }
+    } else if (image === null || image === undefined || image === "") {
+      // Clear image
+      updateFormData.append("image_url", "");
     }
 
-    // Call backend API
+    // Call backend API with FormData
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
     const response = await fetch(`${apiUrl}/api/auth/profile`, {
       method: "PUT",
       headers: {
-        "Content-Type": "application/json",
         Cookie: `token=${token}`,
+        // Don't set Content-Type header - let browser set it with boundary for FormData
       },
       credentials: "include",
-      body: JSON.stringify(updateData),
+      body: updateFormData,
     });
 
     const data = await response.json();

@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Typography from "@/components/ui/typography";
 import { Skeleton } from "@/components/ui/skeleton";
-import noProfilePicture from "public/assets/no-profile-picture.jpg";
+// import noProfilePicture from "public/assets/no-profile-picture.jpg";
+import Profile from "public/assets/profile.jpg";
 
 import { TableSwitch } from "@/components/shared/table/TableSwitch";
 import { ImagePlaceholder } from "@/components/shared/ImagePlaceholder";
@@ -43,7 +44,7 @@ export const getColumns = ({
       cell: ({ row }) => (
         <div className="flex gap-2 items-center">
           <ImagePlaceholder
-            src={row.original.image_url || noProfilePicture}
+            src={row.original.image_url || Profile}
             alt={row.original.name}
             width={32}
             height={32}

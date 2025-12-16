@@ -4,23 +4,33 @@ import { loginFormSchema } from "@/app/(authentication)/login/_components/schema
 import validateFormData from "@/helpers/validateFormData";
 
 export async function POST(request: Request) {
-  // Get form fields
-  const { email, password } = await request.json();
-
-  // Server side form validation
-  const { errors } = validateFormData(loginFormSchema, {
-    email,
-    password,
-  });
-
-  // If there are validation errors, return a JSON response with the errors and a 401 status.
-  if (errors) {
-    return NextResponse.json({ errors }, { status: 401 });
-  }
-
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-
   try {
+    // Get form fields
+    let body;
+    try {
+      body = await request.json();
+    } catch (error) {
+      return NextResponse.json(
+        { errors: { password: "Invalid request body." } },
+        { status: 400 }
+      );
+    }
+
+    const { email, password } = body;
+
+    // Server side form validation
+    const { errors } = validateFormData(loginFormSchema, {
+      email,
+      password,
+    });
+
+    // If there are validation errors, return a JSON response with the errors and a 401 status.
+    if (errors) {
+      return NextResponse.json({ errors }, { status: 401 });
+    }
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
     const response = await fetch(`${apiUrl}/api/auth/login`, {
       method: "POST",
       headers: {
@@ -33,7 +43,15 @@ export async function POST(request: Request) {
       }),
     });
 
-    const data = await response.json();
+    let data;
+    try {
+      data = await response.json();
+    } catch (error) {
+      return NextResponse.json(
+        { errors: { password: "Invalid response from server." } },
+        { status: 500 }
+      );
+    }
 
     if (!response.ok) {
       // Handle backend validation errors
@@ -71,7 +89,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Login error:", error);
     return NextResponse.json(
-      { errors: { password: "Failed to connect to backend server." } },
+      { errors: { password: error instanceof Error ? error.message : "Failed to connect to backend server." } },
       { status: 500 }
     );
   }

@@ -1,6 +1,8 @@
 const User = require("../models/User");
 const generateToken = require("../utils/generateToken");
 const bcrypt = require("bcryptjs");
+const path = require("path");
+const fs = require("fs");
 
 
 // Signup Controller 
@@ -171,13 +173,49 @@ const getMe = async (req, res) =>{
 const updateProfile = async (req, res) => {
     try {
         const userId = req.user._id;
-        const { name, phone, image_url } = req.body;
+        const { name, phone } = req.body;
+
+        // Get current user to check for old image
+        const currentUser = await User.findById(userId);
+        if (!currentUser) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
 
         // Build update object with only provided fields
         const updateData = {};
         if (name !== undefined) updateData.name = name;
         if (phone !== undefined) updateData.phone = phone || null;
-        if (image_url !== undefined) updateData.image_url = image_url || null;
+
+        // Handle image upload - if file is uploaded, save it and get URL
+        if (req.file) {
+            // Delete old image if it exists and is a file path (not base64)
+            if (currentUser.image_url && !currentUser.image_url.startsWith('data:')) {
+                const oldImagePath = path.join(__dirname, "..", currentUser.image_url);
+                if (fs.existsSync(oldImagePath)) {
+                    fs.unlinkSync(oldImagePath);
+                }
+            }
+            // Save file path instead of base64
+            updateData.image_url = `/uploads/profiles/${req.file.filename}`;
+        } else if (req.body.image_url !== undefined) {
+            // If image_url is provided in body (for clearing or updating URL directly)
+            // Only update if it's not a base64 string (to prevent storing base64)
+            if (req.body.image_url && !req.body.image_url.startsWith('data:')) {
+                updateData.image_url = req.body.image_url;
+            } else if (req.body.image_url === null || req.body.image_url === '') {
+                // Delete old image if clearing
+                if (currentUser.image_url && !currentUser.image_url.startsWith('data:')) {
+                    const oldImagePath = path.join(__dirname, "..", currentUser.image_url);
+                    if (fs.existsSync(oldImagePath)) {
+                        fs.unlinkSync(oldImagePath);
+                    }
+                }
+                updateData.image_url = null;
+            }
+        }
 
         // Update user
         const updatedUser = await User.findByIdAndUpdate(

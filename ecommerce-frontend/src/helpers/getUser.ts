@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { getImageUrl } from "./getImageUrl";
 
 export type User = {
   id: string;
@@ -50,7 +51,7 @@ export async function getUser(): Promise<User | null> {
       id: data.user._id || data.user.id,
       email: data.user.email,
       name: data.user.name,
-      image_url: data.user.image_url,
+      image_url: data.user.image_url ? getImageUrl(data.user.image_url) : undefined,
       role: data.user.role,
       phone: data.user.phone || null,
     };

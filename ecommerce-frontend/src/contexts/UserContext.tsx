@@ -2,6 +2,7 @@
 
 import { createContext, useContext } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { getImageUrl } from "@/helpers/getImageUrl";
 
 export type UserRole = "admin" | "manager" | "staff"; // TODO: Update based on your backend roles
 
@@ -49,9 +50,14 @@ export function UserProvider({
       try {
         const response = await fetch("/auth/me", {
           credentials: "include",
+          cache: "no-store",
         });
 
         if (!response.ok) {
+          // If 401, the token is invalid/expired - clear any stale data
+          if (response.status === 401) {
+            console.warn("User session expired or invalid");
+          }
           return { user: null, profile: null };
         }
 
@@ -65,13 +71,13 @@ export function UserProvider({
           id: result.user.id,
           email: result.user.email,
           name: result.user.name,
-          image_url: result.user.image_url,
+          image_url: result.user.image_url ? getImageUrl(result.user.image_url) : undefined,
           role: result.user.role as UserRole | undefined,
         };
 
         const profile: UserProfile = {
           name: result.user.name || null,
-          image_url: result.user.image_url || null,
+          image_url: result.user.image_url ? getImageUrl(result.user.image_url) : null,
           role: (result.user.role as UserRole) || null,
         };
 

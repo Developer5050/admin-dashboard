@@ -1,29 +1,11 @@
 import axiosInstance from "@/helpers/axiosInstance";
+import { getImageUrl } from "@/helpers/getImageUrl";
 import {
   Product,
   FetchProductsParams,
   FetchProductsResponse,
   ProductDetails,
 } from "./types";
-
-// Helper function to convert image path to full URL
-function getImageUrl(imagePath: string | undefined | null): string {
-  if (!imagePath) return "";
-  
-  // If it's already a base64 data URL or full URL, return as is
-  if (imagePath.startsWith("data:") || imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
-    return imagePath;
-  }
-  
-  // If it's a relative path starting with /uploads/, convert to full URL
-  if (imagePath.startsWith("/uploads/")) {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-    return `${apiUrl}${imagePath}`;
-  }
-  
-  // Return as is for any other case
-  return imagePath;
-}
 
 export async function fetchProducts({
   page = 1,
