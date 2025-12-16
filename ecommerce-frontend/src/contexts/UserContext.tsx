@@ -53,6 +53,11 @@ export function UserProvider({
         });
 
         if (!response.ok) {
+          // Don't log errors for expected 401 (unauthorized) responses
+          // This is normal when user is not authenticated
+          if (response.status !== 401) {
+            console.error("Error fetching user profile:", response.status, response.statusText);
+          }
           return { user: null, profile: null };
         }
 
@@ -78,6 +83,7 @@ export function UserProvider({
 
         return { user, profile };
       } catch (error) {
+        // Only log unexpected errors, not authentication failures
         console.error("Error fetching user profile:", error);
         return { user: null, profile: null };
       }

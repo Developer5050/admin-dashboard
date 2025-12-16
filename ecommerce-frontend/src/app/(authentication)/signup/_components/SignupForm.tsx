@@ -4,7 +4,7 @@ import axios from "axios";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -30,7 +30,6 @@ import AuthProviders from "@/components/shared/auth/AuthProviders";
 type FormData = z.infer<typeof signupFormSchema>;
 
 export default function SignupForm() {
-  const queryClient = useQueryClient();
   const router = useRouter();
 
   const form = useForm<FormData>({
@@ -55,7 +54,8 @@ export default function SignupForm() {
       });
 
       form.reset();
-      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
+      // Don't invalidate user-profile query here - user is not logged in yet
+      // Token is cleared after signup, so /auth/me would fail with 401
     },
     onError: (error) => {
       if (axios.isAxiosError(error)) {
