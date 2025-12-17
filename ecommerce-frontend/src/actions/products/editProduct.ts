@@ -11,10 +11,14 @@ export async function editProduct(
   productId: string,
   formData: FormData
 ): Promise<ProductServerActionResponse> {
+  // Get image value - handle empty string, null, or undefined
+  const imageValue = formData.get("image");
+  const processedImage = imageValue && imageValue !== "" ? imageValue : undefined;
+
   const parsedData = productFormSchema.safeParse({
     name: formData.get("name"),
     description: formData.get("description"),
-    image: formData.get("image"),
+    image: processedImage, // Use processed image value
     sku: formData.get("sku"),
     category: formData.get("category"),
     costPrice: formData.get("costPrice"),

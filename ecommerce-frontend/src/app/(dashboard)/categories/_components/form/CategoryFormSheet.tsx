@@ -159,6 +159,7 @@ export default function CategoryFormSheet({
                     name="name"
                     label="Category Name"
                     placeholder="Category Name / Title"
+                    required
                   />
 
                   <FormTextarea
@@ -166,6 +167,7 @@ export default function CategoryFormSheet({
                     name="description"
                     label="Category Description"
                     placeholder="Category Description"
+                    required
                   />
 
                   <FormImageInput
@@ -174,6 +176,7 @@ export default function CategoryFormSheet({
                     label="Category Image"
                     previewImage={previewImage}
                     ref={imageDropzoneRef}
+                    required
                   />
 
                   <FormSlugInput
@@ -183,6 +186,7 @@ export default function CategoryFormSheet({
                     label="Category Slug"
                     placeholder="Category Slug"
                     generateSlugFrom="name"
+                    required
                   />
 
                   <FormField

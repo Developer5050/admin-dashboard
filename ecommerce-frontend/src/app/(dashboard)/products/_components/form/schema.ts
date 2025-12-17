@@ -30,7 +30,12 @@ export const productFormSchema = z
       .string()
       .min(1, { message: "Product description is required" })
       .max(1000, "Product description must be 1000 characters or less"),
-    image: z.union([fileSchema, z.string().url()]),
+    image: z
+      .union([
+        fileSchema,
+        z.string().url({ message: "Image must be a valid URL" }),
+      ])
+      .optional(),
     sku: z
       .string()
       .min(1, { message: "SKU is required" })
