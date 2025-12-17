@@ -7,7 +7,7 @@ const generateToken = (userId, userEmail, userName, userRole, userImageUrl) => {
         name: userName,
         role: userRole,
         image_url: userImageUrl,
-    }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE || "7d" });
+    }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE || "30d" });
 };
 
 module.exports = generateToken;

@@ -4,8 +4,11 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const path = require("path");
 const connectDB = require("./config/DatabaseConfig");
+
+
 const authRoutes = require("./routes/authRoutes");
 const productRoutes = require("./routes/productRoutes");
+const categoryRoutes = require("./routes/categoryRoutes");
 
 const app = express();
 
@@ -26,6 +29,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/categories", categoryRoutes);
 
 // Start
 app.listen(process.env.PORT, () => {

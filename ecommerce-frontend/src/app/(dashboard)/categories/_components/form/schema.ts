@@ -38,6 +38,11 @@ export const categoryFormSchema = z.object({
       message:
         "Slug must be lowercase, alphanumeric, and use hyphens for spaces",
     }),
+  status: z.enum(["active", "inactive"], {
+    required_error: "Category status is required",
+    invalid_type_error: "Category status must be one of: active, inactive",
+  })
+  .default("active"),
 });
 
 export const categoryBulkFormSchema = z.object({

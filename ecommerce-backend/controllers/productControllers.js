@@ -466,7 +466,11 @@ const editProduct = async (req, res) => {
     if (req.file) {
       // Delete old image file if it exists and is not a base64 data URL
       if (existingProduct.image && !existingProduct.image.startsWith("data:")) {
-        const oldImagePath = path.join(__dirname, "..", existingProduct.image);
+        // Remove leading slash to make it relative for path.join
+        const imagePathRelative = existingProduct.image.startsWith("/") 
+          ? existingProduct.image.substring(1) 
+          : existingProduct.image;
+        const oldImagePath = path.join(__dirname, "..", imagePathRelative);
         // Check if file exists before deleting
         if (fs.existsSync(oldImagePath)) {
           try {
@@ -525,6 +529,23 @@ const deleteProduct = async (req, res) => {
             });
         }
 
+        // Delete image file if it exists
+        if (existingProduct.image && !existingProduct.image.startsWith("data:")) {
+            // Remove leading slash to make it relative for path.join
+            const imagePathRelative = existingProduct.image.startsWith("/") 
+                ? existingProduct.image.substring(1) 
+                : existingProduct.image;
+            const imagePath = path.join(__dirname, "..", imagePathRelative);
+            if (fs.existsSync(imagePath)) {
+                try {
+                    fs.unlinkSync(imagePath);
+                } catch (error) {
+                    console.error("Error deleting product image file:", error);
+                    // Continue with deletion even if file deletion fails
+                }
+            }
+        }
+
         // Delete product
         await Product.findByIdAndDelete(id);
         return res.status(200).json({
@@ -565,6 +586,24 @@ const bulkDeleteProducts = async (req, res) => {
                 message: `Some products not found: ${notFoundIds.join(", ")}`,
             });
         }
+
+        // Delete image files for all products
+        existingProducts.forEach((product) => {
+            if (product.image && !product.image.startsWith("data:")) {
+                // Remove leading slash to make it relative for path.join
+                const imagePathRelative = product.image.startsWith("/") 
+                    ? product.image.substring(1) 
+                    : product.image;
+                const imagePath = path.join(__dirname, "..", imagePathRelative);
+                if (fs.existsSync(imagePath)) {
+                    try {
+                        fs.unlinkSync(imagePath);
+                    } catch (error) {
+                        console.error(`Error deleting image for product ${product._id}:`, error);
+                    }
+                }
+            }
+        });
 
         // Delete all products
         await Product.deleteMany({ _id: { $in: productIds } });
