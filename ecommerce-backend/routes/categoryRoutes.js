@@ -1,5 +1,5 @@
 const express = require("express");
-const { createCategory, getAllCategories, deleteCategory, editCategory } = require("../controllers/categoryControllers");
+const { createCategory, getAllCategories, deleteCategory, editCategory, bulkDeleteCategories } = require("../controllers/categoryControllers");
 const authMiddleware = require("../middleware/authMiddleware");
 const categoryUpload = require("../middleware/categoryUploadMiddleware");
 const router = express.Router();
@@ -17,5 +17,8 @@ router.put("/edit-category/:id", authMiddleware, categoryUpload.single("image"),
 
 // Delete Category Route
 router.delete("/delete-category/:id", authMiddleware, deleteCategory);
+
+// Bulk Delete Categories Route
+router.delete("/bulk-delete-categories", authMiddleware, bulkDeleteCategories);
 
 module.exports = router;

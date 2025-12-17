@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { Card } from "@/components/ui/card";
@@ -13,19 +13,45 @@ export default function CategoryFilters() {
 
   const [search, setSearch] = useState(searchParams.get("search") || "");
 
+  // Sync search state with URL params when they change externally
+  useEffect(() => {
+    const urlSearch = searchParams.get("search") || "";
+    setSearch(urlSearch);
+  }, [searchParams]);
+
   const handleFilter = (e: React.FormEvent) => {
     e.preventDefault();
     const params = new URLSearchParams();
-    if (search) params.set("search", search);
+    
+    // Only add search if it has a value
+    if (search && search.trim()) {
+      params.set("search", search.trim());
+    }
 
+    // Preserve limit if it exists, otherwise set default
+    const limit = searchParams.get("limit") || "10";
+    params.set("limit", limit);
+    
+    // Always reset to page 1 when filtering
     params.set("page", "1");
-    params.set("limit", searchParams.get("limit") || "10");
+    
     router.push(`/categories?${params.toString()}`);
   };
 
   const handleReset = () => {
     setSearch("");
-    router.push("/categories");
+    const params = new URLSearchParams();
+    
+    // Preserve limit if it exists
+    const limit = searchParams.get("limit");
+    if (limit) {
+      params.set("limit", limit);
+    }
+    
+    // Reset to page 1
+    params.set("page", "1");
+    
+    router.push(`/categories?${params.toString()}`);
   };
 
   return (

@@ -268,6 +268,65 @@ const editCategory = async (req, res) => {
     }
 };
 
+// Bulk Delete Categories
+const bulkDeleteCategories = async (req, res) => {
+    try {
+        const { ids } = req.body; // Expecting { ids: ["id1", "id2", ...] }
+
+        if (!ids || !Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide an array of category IDs to delete",
+            });
+        }
+
+        // Fetch all categories that match the IDs
+        const categories = await Category.find({ _id: { $in: ids } });
+
+        if (categories.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No categories found for the provided IDs",
+            });
+        }
+
+        // Delete images if they exist
+        for (const category of categories) {
+            if (category.image && !category.image.startsWith("data:")) {
+                const imagePathRelative = category.image.startsWith("/")
+                    ? category.image.substring(1)
+                    : category.image;
+                const imagePath = path.join(__dirname, "..", imagePathRelative);
+
+                if (fs.existsSync(imagePath)) {
+                    try {
+                        fs.unlinkSync(imagePath);
+                    } catch (error) {
+                        console.error(
+                            `Error deleting image for category ${category._id}:`,
+                            error
+                        );
+                    }
+                }
+            }
+        }
+
+        // Delete categories in bulk
+        await Category.deleteMany({ _id: { $in: ids } });
+
+        return res.status(200).json({
+            success: true,
+            message: `${categories.length} categories deleted successfully`,
+        });
+    } catch (error) {
+        console.error("Bulk Delete Categories Error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message,
+        });
+    }
+};
 
 // Delete Category
 const deleteCategory = async (req, res) => {
@@ -316,4 +375,4 @@ const deleteCategory = async (req, res) => {
     }
 }
 
-module.exports = { createCategory, getAllCategories, deleteCategory, editCategory };
+module.exports = { createCategory, getAllCategories, deleteCategory, editCategory, bulkDeleteCategories };
