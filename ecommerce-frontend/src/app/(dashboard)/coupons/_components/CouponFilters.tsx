@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { Card } from "@/components/ui/card";
@@ -13,10 +13,18 @@ export default function CouponFilters() {
 
   const [search, setSearch] = useState(searchParams.get("search") || "");
 
+  // Sync search state with URL params when they change
+  useEffect(() => {
+    const searchParam = searchParams.get("search") || "";
+    setSearch(searchParam);
+  }, [searchParams]);
+
   const handleFilter = (e: React.FormEvent) => {
     e.preventDefault();
     const params = new URLSearchParams();
-    if (search) params.set("search", search);
+    if (search.trim()) {
+      params.set("search", search.trim());
+    }
 
     params.set("page", "1");
     params.set("limit", searchParams.get("limit") || "10");

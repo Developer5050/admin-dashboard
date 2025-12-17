@@ -88,9 +88,15 @@ const getAllCoupons = async (req, res) => {
 
         const skip = (page - 1) * limit;
 
-        const filter = {
-            name: { $regex: search, $options: "i" }
-        };
+        // Build filter to search both name and code
+        const filter = search
+            ? {
+                $or: [
+                    { name: { $regex: search, $options: "i" } },
+                    { code: { $regex: search, $options: "i" } }
+                ]
+            }
+            : {};
 
         const coupons = await Coupon.find(filter)
             .sort({ createdAt: -1 })
