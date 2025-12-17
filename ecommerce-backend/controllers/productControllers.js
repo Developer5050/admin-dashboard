@@ -541,6 +541,48 @@ const deleteProduct = async (req, res) => {
     }
 }
 
+// Bulk Delete Products
+const bulkDeleteProducts = async (req, res) => {
+    try {
+        const { productIds } = req.body;
+
+        // Validate input
+        if (!productIds || !Array.isArray(productIds) || productIds.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Product IDs array is required",
+            });
+        }
+
+        // Check if all products exist
+        const existingProducts = await Product.find({ _id: { $in: productIds } });
+        const foundIds = existingProducts.map(p => p._id.toString());
+        const notFoundIds = productIds.filter(id => !foundIds.includes(id));
+
+        if (notFoundIds.length > 0) {
+            return res.status(404).json({
+                success: false,
+                message: `Some products not found: ${notFoundIds.join(", ")}`,
+            });
+        }
+
+        // Delete all products
+        await Product.deleteMany({ _id: { $in: productIds } });
+        
+        return res.status(200).json({
+            success: true,
+            message: `${productIds.length} product(s) deleted successfully`,
+        });
+    } catch (error) {
+        console.error("Bulk Delete Products Error:", error);
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error",
+            error: error.message,
+        });
+    }
+}
+
 // Get Product By ID
 const getProductById = async (req, res) => {
     try {
@@ -577,4 +619,4 @@ const getProductById = async (req, res) => {
     }
 }
 
-module.exports = { addProduct, getAllProducts, editProduct, deleteProduct, getProductById };
+module.exports = { addProduct, getAllProducts, editProduct, deleteProduct, getProductById, bulkDeleteProducts };
