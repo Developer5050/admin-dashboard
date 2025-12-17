@@ -1,29 +1,43 @@
-"use server";
+// "use server";
 
-import { revalidatePath } from "next/cache";
+// import { revalidatePath } from "next/cache";
 
-// TODO: Replace with Node.js backend API calls
-import { ServerActionResponse } from "@/types/server-action";
+// // TODO: Replace with Node.js backend API calls
+// import { ServerActionResponse } from "@/types/server-action";
+// import { cookies } from "next/headers";
 
-export async function toggleCategoryPublishedStatus(
-  categoryId: string,
-  currentPublishedStatus: boolean
-): Promise<ServerActionResponse> {
-  const supabase = createServerActionClient();
+// export async function toggleCategoryPublishedStatus(
+//   categoryId: string,
+//   currentPublishedStatus: boolean
+// ): Promise<ServerActionResponse> {
+//   // const supabase = createServerActionClient();
+//   const cookieStore = await cookies();
+//   const token = cookieStore.get("token")?.value;
 
-  const newPublishedStatus = !currentPublishedStatus;
+//   if (!token) {
+//     return { dbError: "Authentication required. Please login again." };
+//   }
 
-  const { error: dbError } = await supabase
-    .from("categories")
-    .update({ published: newPublishedStatus })
-    .eq("id", categoryId);
+//   const newPublishedStatus = !currentPublishedStatus;
 
-  if (dbError) {
-    console.error("Database update failed:", dbError);
-    return { dbError: "Failed to update category status." };
-  }
+//   const { error: dbError } = await fetch(`${apiUrl}/api/categories/toggle-category-status/${categoryId}`, {
+//     method: "PATCH",
+//     headers: {
+//       "Content-Type": "application/json",
+//       Cookie: `token=${token}`,
+//     },
+//     body: JSON.stringify({ status: newStatus }),
+//   });
+//     .from("categories")
+//     .update({ published: newPublishedStatus })
+//     .eq("id", categoryId);
 
-  revalidatePath("/categories");
+//   if (dbError) {
+//     console.error("Database update failed:", dbError);
+//     return { dbError: "Failed to update category status." };
+//   }
 
-  return { success: true };
-}
+//   revalidatePath("/categories");
+
+//   return { success: true };
+// }

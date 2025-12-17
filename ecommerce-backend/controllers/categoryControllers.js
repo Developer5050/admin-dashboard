@@ -94,6 +94,121 @@ const createCategory = async (req, res) => {
     }
 }
 
+// Get All Categories
+const getAllCategories = async (req, res) => {
+    try {
+        // Extract query parameters
+        const {
+            page = 1,
+            limit = 10,
+            search,
+        } = req.query;
+
+        // Build filter object
+        const filter = {};
+
+        // Search by category name (case-insensitive)
+        if (search && search.trim()) {
+            filter.name = { $regex: search.trim(), $options: "i" };
+        }
+
+        // Calculate pagination
+        const pageNum = Math.max(1, parseInt(page) || 1);
+        const limitNum = Math.max(1, parseInt(limit) || 10);
+        const skip = (pageNum - 1) * limitNum;
+
+        // Execute query with filters and pagination
+        const categories = await Category.find(filter)
+            .sort({ createdAt: -1 }) // Sort by newest first
+            .skip(skip)
+            .limit(limitNum);
+
+        // Get total count for pagination
+        const totalItems = await Category.countDocuments(filter);
+        const totalPages = Math.ceil(totalItems / limitNum);
+
+        // Transform categories to match frontend format
+        const transformedCategories = categories.map((category) => {
+            return {
+                id: category._id.toString(),
+                name: category.name || "",
+                description: category.description || "",
+                image_url: category.image || "",
+                slug: category.slug || "",
+                status: category.status || "active",
+                created_at: category.createdAt ? category.createdAt.toISOString() : new Date().toISOString(),
+                updated_at: category.updatedAt ? category.updatedAt.toISOString() : new Date().toISOString(),
+            };
+        });
+
+        // Format response to match frontend expectations
+        return res.status(200).json({
+            success: true,
+            data: transformedCategories,
+            pagination: {
+                limit: limitNum,
+                current: pageNum,
+                items: totalItems,
+                pages: totalPages,
+                next: pageNum < totalPages ? pageNum + 1 : null,
+                prev: pageNum > 1 ? pageNum - 1 : null,
+            },
+        });
+    } catch (error) {
+        console.error("Get Categories Error:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch categories",
+            error: error.message,
+        });
+    }
+};
+
+// Toggle Category Status
+const toggleCategoryStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+
+        // Validate status
+        if (!status || !["active", "inactive"].includes(status)) {
+            return res.status(400).json({
+                success: false,
+                message: "Status must be either 'active' or 'inactive'",
+            });
+        }
+
+        // Check if category exists
+        const existingCategory = await Category.findById(id);
+        if (!existingCategory) {
+            return res.status(404).json({
+                success: false,
+                message: "Category not found",
+            });
+        }
+
+        // Update category status
+        const updatedCategory = await Category.findByIdAndUpdate(
+            id,
+            { status: status },
+            { new: true }
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: "Category status updated successfully",
+            category: updatedCategory,
+        });
+    } catch (error) {
+        console.error("Toggle Category Status Error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message,
+        });
+    }
+};
+
 // Delete Category
 const deleteCategory = async (req, res) => {
     try {
@@ -141,4 +256,4 @@ const deleteCategory = async (req, res) => {
     }
 }
 
-module.exports = { createCategory, deleteCategory };
+module.exports = { createCategory, getAllCategories, toggleCategoryStatus, deleteCategory };

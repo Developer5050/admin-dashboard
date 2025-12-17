@@ -27,6 +27,20 @@ import {
   FormTextarea,
 } from "@/components/shared/form";
 import { FormSubmitButton } from "@/components/shared/form/FormSubmitButton";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormControl,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 import { categoryFormSchema, CategoryFormData } from "./schema";
 import { objectToFormData } from "@/helpers/objectToFormData";
@@ -75,6 +89,7 @@ export default function CategoryFormSheet({
       description: "",
       image: undefined,
       slug: "",
+      status: "active" as "active" | "inactive",
       ...initialData,
     },
   });
@@ -168,6 +183,36 @@ export default function CategoryFormSheet({
                     label="Category Slug"
                     placeholder="Category Slug"
                     generateSlugFrom="name"
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col md:flex-row md:gap-x-4 md:space-y-0">
+                        <FormLabel className="md:flex-shrink-0 md:w-1/4 md:mt-2 leading-snug">
+                          Status
+                          <span className="text-red-500 ml-1">*</span>
+                        </FormLabel>
+                        <div className="space-y-2 w-full">
+                          <Select
+                            value={field.value}
+                            onValueChange={(value) => field.onChange(value)}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="md:basis-1/5">
+                                <SelectValue placeholder="Select Status" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="active">Active</SelectItem>
+                              <SelectItem value="inactive">Inactive</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </div>
+                      </FormItem>
+                    )}
                   />
                 </div>
               </FormSheetBody>

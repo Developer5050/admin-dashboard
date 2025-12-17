@@ -3,19 +3,19 @@ import { ColumnDef } from "@tanstack/react-table";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import Typography from "@/components/ui/typography";
 
-import { TableSwitch } from "@/components/shared/table/TableSwitch";
 import { ImagePlaceholder } from "@/components/shared/ImagePlaceholder";
 import { SheetTooltip } from "@/components/shared/table/TableActionTooltip";
 import { TableActionAlertDialog } from "@/components/shared/table/TableActionAlertDialog";
 import CategoryFormSheet from "../form/CategoryFormSheet";
 import { Category } from "@/services/categories/types";
 import { SkeletonColumn } from "@/types/skeleton";
+import { StaffBadgeVariants } from "@/constants/badge";
 
 import { editCategory } from "@/actions/categories/editCategory";
 import { deleteCategory } from "@/actions/categories/deleteCategory";
-import { toggleCategoryPublishedStatus } from "@/actions/categories/toggleCategoryStatus";
 import { HasPermission } from "@/hooks/use-authorization";
 
 export const getColumns = ({
@@ -50,26 +50,22 @@ export const getColumns = ({
     },
   ];
 
-  if (hasPermission("categories", "canTogglePublished")) {
-    columns.splice(4, 0, {
-      header: "published",
-      cell: ({ row }) => (
-        <div className="pl-5">
-          <TableSwitch
-            checked={row.original.published}
-            toastSuccessMessage="Category status updated successfully."
-            queryKey="categories"
-            onCheckedChange={() =>
-              toggleCategoryPublishedStatus(
-                row.original.id,
-                row.original.published
-              )
-            }
-          />
-        </div>
-      ),
-    });
-  }
+  columns.splice(4, 0, {
+    header: "Status",
+    cell: ({ row }) => {
+      const status = row.original.status || "active";
+      const badgeVariant = StaffBadgeVariants[status as keyof typeof StaffBadgeVariants] || "secondary";
+      
+      return (
+        <Badge
+          variant={badgeVariant}
+          className="flex-shrink-0 text-xs"
+        >
+          {status === "active" ? "Active" : "Inactive"}
+        </Badge>
+      );
+    },
+  });
 
   if (
     hasPermission("categories", "canDelete") ||
@@ -113,6 +109,7 @@ export const getColumns = ({
                   description: row.original.description ?? "",
                   image: row.original.image_url,
                   slug: row.original.slug,
+                  status: row.original.status || "active",
                 }}
                 action={(formData) => editCategory(row.original.id, formData)}
                 previewImage={row.original.image_url}
@@ -163,7 +160,7 @@ export const skeletonColumns: SkeletonColumn[] = [
     cell: <Skeleton className="w-[32rem] h-8" />,
   },
   {
-    header: "published",
+    header: "Status",
     cell: <Skeleton className="w-16 h-10" />,
   },
   {
