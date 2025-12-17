@@ -151,6 +151,7 @@ export default function CouponFormSheet({
                     name="name"
                     label="Campaign Name"
                     placeholder="Campaign Name"
+                    required
                   />
 
                   <FormTextInput
@@ -158,6 +159,7 @@ export default function CouponFormSheet({
                     name="code"
                     label="Campaign Code"
                     placeholder="Campaign Code"
+                    required
                   />
 
                   <FormImageInput
@@ -166,6 +168,7 @@ export default function CouponFormSheet({
                     label="Product Image"
                     previewImage={previewImage}
                     ref={imageDropzoneRef}
+                    required
                   />
 
                   <FormDatetimeInput
@@ -173,6 +176,7 @@ export default function CouponFormSheet({
                     name="startDate"
                     label="Start Date / Time"
                     container={container || undefined}
+                    required
                   />
 
                   <FormDatetimeInput
@@ -180,6 +184,7 @@ export default function CouponFormSheet({
                     name="endDate"
                     label="End Date / Time"
                     container={container || undefined}
+                    required
                   />
 
                   <FormDiscountInput
@@ -189,6 +194,7 @@ export default function CouponFormSheet({
                     placeholder="Discount"
                     isPercentageField="isPercentageDiscount"
                     form={form}
+                    required
                   />
                 </div>
               </FormSheetBody>

@@ -17,12 +17,13 @@ type FormDatetimeInputProps<TFormData extends FieldValues> = {
   name: Path<TFormData>;
   label: string;
   container?: HTMLDivElement;
+  required?: boolean;
 };
 
 const FormDatetimeInput = forwardRef(function FormDatetimeInputRender<
   TFormData extends FieldValues
 >(
-  { control, name, label, container }: FormDatetimeInputProps<TFormData>,
+  { control, name, label, container, required }: FormDatetimeInputProps<TFormData>,
   ref: Ref<HTMLButtonElement>
 ) {
   return (
@@ -33,6 +34,7 @@ const FormDatetimeInput = forwardRef(function FormDatetimeInputRender<
         <FormItem className="flex flex-col md:flex-row md:gap-x-4 md:space-y-0">
           <FormLabel className="md:flex-shrink-0 md:w-1/4 md:mt-2 leading-snug">
             {label}
+            {required && <span className="text-destructive ml-1">*</span>}
           </FormLabel>
 
           <div className="space-y-2 w-full">

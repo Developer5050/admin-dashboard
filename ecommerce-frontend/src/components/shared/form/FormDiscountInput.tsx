@@ -26,6 +26,7 @@ type FormDiscountInputProps<TFormData extends FieldValues> = {
   placeholder: string;
   isPercentageField: Path<TFormData>;
   form: UseFormReturn<TFormData>;
+  required?: boolean;
 };
 
 function FormDiscountInput<TFormData extends FieldValues>({
@@ -35,6 +36,7 @@ function FormDiscountInput<TFormData extends FieldValues>({
   placeholder,
   isPercentageField,
   form,
+  required,
 }: FormDiscountInputProps<TFormData>) {
   const isPercentage = form.watch(isPercentageField);
   const [rotation, setRotation] = useState(0);
@@ -56,6 +58,7 @@ function FormDiscountInput<TFormData extends FieldValues>({
         <FormItem className="flex flex-col md:flex-row md:gap-x-4 md:space-y-0">
           <FormLabel className="md:flex-shrink-0 md:w-1/4 md:mt-2 leading-snug">
             {label}
+            {required && <span className="text-destructive ml-1">*</span>}
           </FormLabel>
 
           <div className="space-y-2 w-full">
