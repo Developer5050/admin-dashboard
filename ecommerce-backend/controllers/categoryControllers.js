@@ -62,7 +62,7 @@ const createCategory = async (req, res) => {
         }
 
         // Category Check 
-        const existingCategory = await Category.findOne({ name : name.trim()});
+        const existingCategory = await Category.findOne({ name: name.trim() });
         if (existingCategory) {
             return res.status(400).json({
                 success: false,
@@ -164,19 +164,10 @@ const getAllCategories = async (req, res) => {
     }
 };
 
-// Toggle Category Status
-const toggleCategoryStatus = async (req, res) => {
+// Edit Category
+const editCategory = async (req, res) => {
     try {
         const { id } = req.params;
-        const { status } = req.body;
-
-        // Validate status
-        if (!status || !["active", "inactive"].includes(status)) {
-            return res.status(400).json({
-                success: false,
-                message: "Status must be either 'active' or 'inactive'",
-            });
-        }
 
         // Check if category exists
         const existingCategory = await Category.findById(id);
@@ -187,20 +178,88 @@ const toggleCategoryStatus = async (req, res) => {
             });
         }
 
-        // Update category status
+        // Normalize body keys
+        const normalizedBody = {};
+        for (const key in req.body) {
+            normalizedBody[key.trim()] = req.body[key];
+        }
+
+        const { name, description, slug, status } = normalizedBody;
+
+        // Required fields check
+        if (!name || !description || !slug || !status) {
+            return res.status(400).json({
+                success: false,
+                message: "All fields are required",
+                receivedFields: Object.keys(normalizedBody),
+            });
+        }
+
+        // Generate slug
+        const categorySlug = slugify(slug.trim(), {
+            lower: true,
+            strict: true,
+        });
+
+        if (!categorySlug) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid slug",
+            });
+        }
+
+        // Slug duplicate check
+        const existingSlug = await Category.findOne({
+            slug: categorySlug,
+            _id: { $ne: id },
+        });
+        if (existingSlug) {
+            return res.status(400).json({
+                success: false,
+                message: "Category with this slug already exists",
+            });
+        }
+
+        // Name duplicate check
+        const existingCategoryName = await Category.findOne({
+            name: name.trim(),
+            _id: { $ne: id },
+        });
+        if (existingCategoryName) {
+            return res.status(400).json({
+                success: false,
+                message: "Category with this name already exists",
+            });
+        }
+
+        // Build update object
+        const updateData = {
+            name: name.trim(),
+            description: description.trim(),
+            slug: categorySlug,
+            status,
+        };
+
+        // Image update (optional)
+        if (req.file) {
+            updateData.image = `/uploads/categories/${req.file.filename}`;
+        }
+
+        // Update category
         const updatedCategory = await Category.findByIdAndUpdate(
             id,
-            { status: status },
-            { new: true }
+            updateData,
+            { new: true, runValidators: true }
         );
 
         return res.status(200).json({
             success: true,
-            message: "Category status updated successfully",
+            message: "Category updated successfully",
             category: updatedCategory,
         });
+
     } catch (error) {
-        console.error("Toggle Category Status Error:", error);
+        console.error("Edit Category Error:", error);
         return res.status(500).json({
             success: false,
             message: "Internal server error",
@@ -208,6 +267,7 @@ const toggleCategoryStatus = async (req, res) => {
         });
     }
 };
+
 
 // Delete Category
 const deleteCategory = async (req, res) => {
@@ -226,11 +286,11 @@ const deleteCategory = async (req, res) => {
         // Delete image file if it exists
         if (existingCategory.image && !existingCategory.image.startsWith("data:")) {
             // Remove leading slash to make it relative for path.join
-            const imagePathRelative = existingCategory.image.startsWith("/") 
-                ? existingCategory.image.substring(1) 
+            const imagePathRelative = existingCategory.image.startsWith("/")
+                ? existingCategory.image.substring(1)
                 : existingCategory.image;
             const imagePath = path.join(__dirname, "..", imagePathRelative);
-            
+
             if (fs.existsSync(imagePath)) {
                 try {
                     fs.unlinkSync(imagePath);
@@ -256,4 +316,4 @@ const deleteCategory = async (req, res) => {
     }
 }
 
-module.exports = { createCategory, getAllCategories, toggleCategoryStatus, deleteCategory };
+module.exports = { createCategory, getAllCategories, deleteCategory, editCategory };

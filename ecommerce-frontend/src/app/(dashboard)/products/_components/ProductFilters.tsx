@@ -125,7 +125,7 @@ export default function ProductFilters() {
                 !isError &&
                 categories &&
                 categories.map((category) => (
-                  <SelectItem key={category.slug} value={category.slug}>
+                  <SelectItem key={category.id} value={category.id}>
                     {category.name}
                   </SelectItem>
                 ))}

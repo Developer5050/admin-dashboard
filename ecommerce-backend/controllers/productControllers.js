@@ -1,4 +1,6 @@
 const Product = require("../models/Product");
+const Category = require("../models/Category");
+const mongoose = require("mongoose");
 const slugify = require("slugify");
 const path = require("path");
 const fs = require("fs");
@@ -156,11 +158,33 @@ const getAllProducts = async (req, res) => {
         filter.name = { $regex: search.trim(), $options: "i" };
       }
 
-      // Filter by category (case-insensitive match)
+      // Filter by category
       if (category && category.trim() && category !== "all") {
-        filter.category = { 
-          $regex: new RegExp(`^${category.trim()}$`, "i") 
-        };
+        const categoryValue = category.trim();
+        
+        // Check if it's a valid MongoDB ObjectId (category ID)
+        if (mongoose.Types.ObjectId.isValid(categoryValue) && categoryValue.length === 24) {
+          // Filter by category ID (exact match)
+          filter.category = categoryValue;
+        } else {
+          // It might be a category slug or name - look up the category first
+          const foundCategory = await Category.findOne({
+            $or: [
+              { slug: categoryValue },
+              { name: { $regex: new RegExp(`^${categoryValue}$`, "i") } }
+            ]
+          });
+          
+          if (foundCategory) {
+            // Filter by category ID (since products store category as ID string)
+            filter.category = foundCategory._id.toString();
+          } else {
+            // If category not found, also try direct name match (for backward compatibility)
+            filter.category = { 
+              $regex: new RegExp(`^${categoryValue}$`, "i") 
+            };
+          }
+        }
       }
 
       // Filter by status
@@ -173,9 +197,6 @@ const getAllProducts = async (req, res) => {
         const mappedStatus = statusMap[status.trim()] || status.trim();
         filter.status = mappedStatus;
       }
-
-      // Note: published field doesn't exist in Product model, so we skip it
-      // If you need published filtering, add it to the Product model first
 
       // Build sort object
       let sort = { createdAt: -1 }; // Default sort
@@ -215,9 +236,60 @@ const getAllProducts = async (req, res) => {
       const totalItems = await Product.countDocuments(filter);
       const totalPages = Math.ceil(totalItems / limitNum);
 
+      // Get all unique category values from products
+      const categoryValues = [...new Set(products.map(p => p.category).filter(Boolean))];
+      
+      // Look up categories by ID or name
+      const categoryMap = new Map();
+      if (categoryValues.length > 0) {
+        // Separate valid ObjectIds from names
+        const categoryIds = [];
+        const categoryNames = [];
+        
+        categoryValues.forEach(val => {
+          // Check if it's a valid MongoDB ObjectId
+          if (mongoose.Types.ObjectId.isValid(val) && val.length === 24) {
+            categoryIds.push(val);
+          } else {
+            categoryNames.push(val);
+          }
+        });
+        
+        // Build query conditions
+        const queryConditions = [];
+        if (categoryIds.length > 0) {
+          queryConditions.push({ _id: { $in: categoryIds.map(id => new mongoose.Types.ObjectId(id)) } });
+        }
+        if (categoryNames.length > 0) {
+          queryConditions.push({ name: { $in: categoryNames } });
+        }
+        
+        // Find categories by ID or name
+        const categoriesById = queryConditions.length > 0 
+          ? await Category.find({ $or: queryConditions })
+          : [];
+        
+        // Create a map for quick lookup
+        categoriesById.forEach(cat => {
+          // Map by ID (as string)
+          categoryMap.set(cat._id.toString(), {
+            name: cat.name,
+            slug: cat.slug,
+          });
+          // Map by name (in case category was stored as name)
+          categoryMap.set(cat.name, {
+            name: cat.name,
+            slug: cat.slug,
+          });
+        });
+      }
+
       // Transform products to match frontend format
       const transformedProducts = products.map((product) => {
         const categoryValue = product.category || "";
+        // Look up category name from the map
+        const categoryInfo = categoryValue ? categoryMap.get(categoryValue) : null;
+        
         return {
           id: product._id.toString(),
           name: product.name || "",
@@ -234,9 +306,9 @@ const getAllProducts = async (req, res) => {
           status: product.status || "draft",
           created_at: product.createdAt ? product.createdAt.toISOString() : new Date().toISOString(),
           updated_at: product.updatedAt ? product.updatedAt.toISOString() : new Date().toISOString(),
-          categories: categoryValue ? {
-            name: categoryValue,
-            slug: null,
+          categories: categoryInfo ? {
+            name: categoryInfo.name,
+            slug: categoryInfo.slug,
           } : null,
         };
       });
