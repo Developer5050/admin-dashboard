@@ -7,7 +7,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Typography from "@/components/ui/typography";
 import { Badge } from "@/components/ui/badge";
 
-import { TableSwitch } from "@/components/shared/table/TableSwitch";
 import { ImagePlaceholder } from "@/components/shared/ImagePlaceholder";
 import { SheetTooltip } from "@/components/shared/table/TableActionTooltip";
 import { TableActionAlertDialog } from "@/components/shared/table/TableActionAlertDialog";
@@ -18,7 +17,6 @@ import { Coupon, CouponStatus } from "@/services/coupons/types";
 
 import { editCoupon } from "@/actions/coupons/editCoupon";
 import { deleteCoupon } from "@/actions/coupons/deleteCoupon";
-import { toggleCouponPublishedStatus } from "@/actions/coupons/toggleCouponStatus";
 import { HasPermission } from "@/hooks/use-authorization";
 
 export const getColumns = ({
@@ -91,27 +89,6 @@ export const getColumns = ({
       },
     },
   ];
-
-  if (hasPermission("coupons", "canTogglePublished")) {
-    columns.splice(3, 0, {
-      header: "published",
-      cell: ({ row }) => (
-        <div className="pl-5">
-          <TableSwitch
-            checked={row.original.published}
-            toastSuccessMessage="Coupon status updated successfully."
-            queryKey="coupons"
-            onCheckedChange={() =>
-              toggleCouponPublishedStatus(
-                row.original.id,
-                row.original.published
-              )
-            }
-          />
-        </div>
-      ),
-    });
-  }
 
   if (
     hasPermission("coupons", "canDelete") ||
@@ -213,10 +190,6 @@ export const skeletonColumns: SkeletonColumn[] = [
   {
     header: "discount",
     cell: <Skeleton className="w-20 h-8" />,
-  },
-  {
-    header: "published",
-    cell: <Skeleton className="w-16 h-10" />,
   },
   {
     header: "start date",

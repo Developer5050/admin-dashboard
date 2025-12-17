@@ -1,6 +1,6 @@
 "use client";
 
-import { PenSquare, Trash2, Plus } from "lucide-react";
+import { Trash2, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -9,12 +9,10 @@ import { ActionAlertDialog } from "@/components/shared/ActionAlertDialog";
 import { ExportDataButtons } from "@/components/shared/ExportDataButtons";
 
 import CouponFormSheet from "./form/CouponFormSheet";
-import CouponBulkActionSheet from "./form/CouponBulkActionSheet";
 import { addCoupon } from "@/actions/coupons/addCoupon";
 import { deleteCoupons } from "@/actions/coupons/deleteCoupons";
 import { exportCoupons } from "@/actions/coupons/exportCoupons";
 import { RowSelectionProps } from "@/types/data-table";
-import { editCategories } from "@/actions/categories/editCategories";
 import { useAuthorization } from "@/hooks/use-authorization";
 
 export default function CouponActions({
@@ -28,31 +26,9 @@ export default function CouponActions({
       <form className="flex flex-col xl:flex-row xl:justify-between gap-4">
         <ExportDataButtons action={exportCoupons} tableName="coupons" />
 
-        {(hasPermission("coupons", "canEdit") ||
-          hasPermission("coupons", "canDelete") ||
+        {(hasPermission("coupons", "canDelete") ||
           hasPermission("coupons", "canCreate")) && (
           <div className="flex flex-col sm:flex-row gap-4">
-            {hasPermission("coupons", "canEdit") && (
-              <CouponBulkActionSheet
-                action={(formData) =>
-                  editCategories(Object.keys(rowSelection), formData)
-                }
-                onSuccess={() => setRowSelection({})}
-              >
-                <SheetTrigger asChild>
-                  <Button
-                    variant="secondary"
-                    size="lg"
-                    type="button"
-                    disabled={!Boolean(Object.keys(rowSelection).length)}
-                    className="sm:flex-grow xl:flex-grow-0 transition-opacity duration-300"
-                  >
-                    <PenSquare className="mr-2 size-4" /> Bulk Action
-                  </Button>
-                </SheetTrigger>
-              </CouponBulkActionSheet>
-            )}
-
             {hasPermission("coupons", "canDelete") && (
               <ActionAlertDialog
                 title={`Delete ${Object.keys(rowSelection).length} coupons?`}
