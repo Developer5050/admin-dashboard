@@ -12,6 +12,7 @@ import { EditProductSheet } from "./_components/EditProductSheet";
 import { fetchProductDetails } from "@/services/products";
 import Link from "next/link";
 import { ArrowLeftIcon } from "lucide-react";
+import { ProductTabs } from "./_components/ProductTabs";
 
 type PageParams = {
   params: {
@@ -169,6 +170,9 @@ export default async function ProductDetails({ params: { slug } }: PageParams) {
             </div>
           </div>
         </div>
+
+        {/* Description and Reviews Tabs */}
+        <ProductTabs product={product} />
       </section>
     );
   } catch (e: any) {
