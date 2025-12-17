@@ -34,12 +34,8 @@ export async function fetchProducts({
 
   const backendData = response.data;
   
-  // If backend already returns the correct structure, use it
-  if (backendData.data && backendData.pagination) {
-    return backendData;
-  }
-
   // Transform backend products to frontend format
+  // Always transform to ensure image URLs are processed correctly
   const backendProducts = backendData.products || backendData.data || [];
   const transformedProducts = backendProducts.map((product: any) => {
     // Handle category - backend stores category as string (name or ID)
@@ -49,34 +45,37 @@ export async function fetchProducts({
       slug: null,
     } : null);
 
-    const imagePath = product.image || product.image_url || "";
+    // Handle image - backend may send image_url (already transformed) or image (raw path)
+    const imagePath = product.image_url || product.image || "";
     
     return {
-      id: product._id || product.id,
+      id: product._id?.toString() || product.id?.toString() || "",
       name: product.name || "",
       description: product.description || "",
       image_url: getImageUrl(imagePath),
       sku: product.sku || "",
-      cost_price: product.costPrice ?? product.cost_price ?? 0,
-      selling_price: product.salesPrice ?? product.selling_price ?? 0,
-      stock: product.quantity ?? product.stock ?? 0,
-      min_stock_threshold: product.minStockThreshold ?? product.min_stock_threshold ?? 0,
+      // Handle both backend formats: costPrice (MongoDB) or cost_price (transformed)
+      cost_price: product.cost_price ?? product.costPrice ?? 0,
+      selling_price: product.selling_price ?? product.salesPrice ?? 0,
+      stock: product.stock ?? product.quantity ?? 0,
+      min_stock_threshold: product.min_stock_threshold ?? product.minStockThreshold ?? 0,
       category_id: categoryValue,
       slug: product.slug || "",
       published: product.published !== undefined ? product.published : true,
       status: product.status || "draft",
-      created_at: product.createdAt || product.created_at || new Date().toISOString(),
-      updated_at: product.updatedAt || product.updated_at || new Date().toISOString(),
+      created_at: product.created_at || product.createdAt || new Date().toISOString(),
+      updated_at: product.updated_at || product.updatedAt || new Date().toISOString(),
       categories,
     };
   });
 
-  const totalItems = backendData.count || transformedProducts.length;
-  const totalPages = Math.ceil(totalItems / limit);
+  // Use pagination from backend if available, otherwise calculate
+  const totalItems = backendData.pagination?.items || backendData.count || transformedProducts.length;
+  const totalPages = backendData.pagination?.pages || Math.ceil(totalItems / limit);
 
   return {
     data: transformedProducts,
-    pagination: {
+    pagination: backendData.pagination || {
       limit,
       current: page,
       items: totalItems,

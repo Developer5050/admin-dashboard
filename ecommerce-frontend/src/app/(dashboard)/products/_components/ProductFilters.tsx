@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 
@@ -25,9 +25,22 @@ export default function ProductFilters() {
 
   const [filters, setFilters] = useState({
     search: searchParams.get("search") || "",
-    category: searchParams.get("category") || "",
-    sort: getSortFromParams(searchParams) || "",
+    category: searchParams.get("category") || "all",
+    sort: getSortFromParams(searchParams) || "none",
   });
+
+  // Sync filters with URL params when they change
+  useEffect(() => {
+    const currentSearch = searchParams.get("search") || "";
+    const currentCategory = searchParams.get("category") || "all";
+    const currentSort = getSortFromParams(searchParams) || "none";
+
+    setFilters({
+      search: currentSearch,
+      category: currentCategory,
+      sort: currentSort,
+    });
+  }, [searchParams]);
 
   const {
     data: categories,
@@ -42,10 +55,18 @@ export default function ProductFilters() {
   const handleFilter = (e: React.FormEvent) => {
     e.preventDefault();
     const params = new URLSearchParams();
-    if (filters.search) params.set("search", filters.search);
-    if (filters.category && filters.category !== "all")
+    
+    // Add search parameter if provided
+    if (filters.search && filters.search.trim()) {
+      params.set("search", filters.search.trim());
+    }
+    
+    // Add category parameter if not "all"
+    if (filters.category && filters.category !== "all") {
       params.set("category", filters.category);
+    }
 
+    // Add sort parameters if not "none"
     if (filters.sort && filters.sort !== "none") {
       const sortConfig = sortToParamsMap[filters.sort];
       if (sortConfig) {
@@ -53,8 +74,13 @@ export default function ProductFilters() {
       }
     }
 
+    // Always set page to 1 when filtering and preserve limit
     params.set("page", "1");
-    params.set("limit", searchParams.get("limit") || "10");
+    const currentLimit = searchParams.get("limit");
+    if (currentLimit) {
+      params.set("limit", currentLimit);
+    }
+    
     router.push(`/products?${params.toString()}`);
   };
 
@@ -78,7 +104,7 @@ export default function ProductFilters() {
         />
 
         <Select
-          value={filters.category}
+          value={filters.category || "all"}
           onValueChange={(value) => setFilters({ ...filters, category: value })}
         >
           <SelectTrigger className="md:basis-1/5">
@@ -98,7 +124,7 @@ export default function ProductFilters() {
               {!isLoading &&
                 !isError &&
                 categories &&
-                categories!.map((category) => (
+                categories.map((category) => (
                   <SelectItem key={category.slug} value={category.slug}>
                     {category.name}
                   </SelectItem>
@@ -108,7 +134,7 @@ export default function ProductFilters() {
         </Select>
 
         <Select
-          value={filters.sort}
+          value={filters.sort || "none"}
           onValueChange={(value) => setFilters({ ...filters, sort: value })}
         >
           <SelectTrigger className="md:basis-1/5">

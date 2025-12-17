@@ -136,12 +136,123 @@ const addProduct = async (req, res) => {
 // Get All Products
 const getAllProducts = async (req, res) => {
     try {
-      const products = await Product.find().sort({ createdAt: -1 });
-  
+      // Extract query parameters
+      const {
+        page = 1,
+        limit = 10,
+        search,
+        category,
+        priceSort,
+        status,
+        published,
+        dateSort,
+      } = req.query;
+
+      // Build filter object
+      const filter = {};
+
+      // Search by product name (case-insensitive)
+      if (search && search.trim()) {
+        filter.name = { $regex: search.trim(), $options: "i" };
+      }
+
+      // Filter by category (case-insensitive match)
+      if (category && category.trim() && category !== "all") {
+        filter.category = { 
+          $regex: new RegExp(`^${category.trim()}$`, "i") 
+        };
+      }
+
+      // Filter by status
+      if (status && status.trim()) {
+        // Map frontend status values to backend values
+        const statusMap = {
+          "selling": "selling",
+          "out-of-stock": "out of stock",
+        };
+        const mappedStatus = statusMap[status.trim()] || status.trim();
+        filter.status = mappedStatus;
+      }
+
+      // Note: published field doesn't exist in Product model, so we skip it
+      // If you need published filtering, add it to the Product model first
+
+      // Build sort object
+      let sort = { createdAt: -1 }; // Default sort
+
+      // Sort by price
+      if (priceSort === "lowest-first") {
+        sort = { salesPrice: 1 };
+      } else if (priceSort === "highest-first") {
+        sort = { salesPrice: -1 };
+      }
+
+      // Sort by date
+      if (dateSort) {
+        if (dateSort === "added-asc") {
+          sort = { createdAt: 1 };
+        } else if (dateSort === "added-desc") {
+          sort = { createdAt: -1 };
+        } else if (dateSort === "updated-asc") {
+          sort = { updatedAt: 1 };
+        } else if (dateSort === "updated-desc") {
+          sort = { updatedAt: -1 };
+        }
+      }
+
+      // Calculate pagination
+      const pageNum = Math.max(1, parseInt(page) || 1);
+      const limitNum = Math.max(1, parseInt(limit) || 10);
+      const skip = (pageNum - 1) * limitNum;
+
+      // Execute query with filters, sort, and pagination
+      const products = await Product.find(filter)
+        .sort(sort)
+        .skip(skip)
+        .limit(limitNum);
+
+      // Get total count for pagination
+      const totalItems = await Product.countDocuments(filter);
+      const totalPages = Math.ceil(totalItems / limitNum);
+
+      // Transform products to match frontend format
+      const transformedProducts = products.map((product) => {
+        const categoryValue = product.category || "";
+        return {
+          id: product._id.toString(),
+          name: product.name || "",
+          description: product.description || "",
+          image_url: product.image || "",
+          sku: product.sku || "",
+          cost_price: product.costPrice || 0,
+          selling_price: product.salesPrice || 0,
+          stock: product.quantity || 0,
+          min_stock_threshold: product.minStockThreshold || 0,
+          category_id: categoryValue,
+          slug: product.slug || "",
+          published: product.published !== undefined ? product.published : true,
+          status: product.status || "draft",
+          created_at: product.createdAt ? product.createdAt.toISOString() : new Date().toISOString(),
+          updated_at: product.updatedAt ? product.updatedAt.toISOString() : new Date().toISOString(),
+          categories: categoryValue ? {
+            name: categoryValue,
+            slug: null,
+          } : null,
+        };
+      });
+
+      // Format response to match frontend expectations
       return res.status(200).json({
         success: true,
-        count: products.length,
-        products,
+        data: transformedProducts,
+        pagination: {
+          limit: limitNum,
+          current: pageNum,
+          items: totalItems,
+          pages: totalPages,
+          next: pageNum < totalPages ? pageNum + 1 : null,
+          prev: pageNum > 1 ? pageNum - 1 : null,
+        },
       });
     } catch (error) {
       console.error("Get Products Error:", error);
