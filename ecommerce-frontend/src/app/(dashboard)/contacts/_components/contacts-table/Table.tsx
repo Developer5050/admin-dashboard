@@ -5,13 +5,13 @@ import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 
 import DataTable from "@/components/shared/table/DataTable";
 import { DataTableProps } from "@/types/data-table";
-import { Staff } from "@/services/staff/types";
+import { Contact } from "@/services/contacts/types";
 
-export default function StaffTable({
+export default function ContactsTable({
   data,
   columns,
   pagination,
-}: DataTableProps<Staff>) {
+}: DataTableProps<Contact>) {
   const table = useReactTable({
     data,
     columns,
@@ -20,3 +20,4 @@ export default function StaffTable({
 
   return <DataTable table={table} pagination={pagination} />;
 }
+

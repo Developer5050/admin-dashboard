@@ -1,7 +1,7 @@
 import { OrderStatus } from "@/services/orders/types";
 import { ProductStatus } from "@/services/products/types";
 import { CouponStatus } from "@/services/coupons/types";
-import { StaffStatus } from "@/services/staff/types";
+import { ContactStatus } from "@/services/contacts/types";
 
 import { BadgeVariantProps } from "@/components/ui/badge";
 
@@ -23,7 +23,12 @@ export const CouponBadgeVariants: Record<CouponStatus, BadgeVariantProps> = {
   expired: "destructive",
 };
 
-export const StaffBadgeVariants: Record<StaffStatus, BadgeVariantProps> = {
+export const ContactBadgeVariants: Record<ContactStatus, BadgeVariantProps> = {
+  read: "success",
+  unread: "warning",
+};
+
+export const CategoryBadgeVariants: Record<"active" | "inactive", BadgeVariantProps> = {
   active: "success",
   inactive: "destructive",
 };

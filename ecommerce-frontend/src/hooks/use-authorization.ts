@@ -2,35 +2,33 @@ import { useUser, UserRole } from "@/contexts/UserContext";
 
 const permissions = {
   orders: {
-    canChangeStatus: ["super_admin", "admin", "cashier"],
-    canPrint: ["super_admin", "admin", "cashier"],
+    canChangeStatus: ["admin"],
+    canPrint: ["admin"],
   },
   categories: {
-    canCreate: ["super_admin", "admin"],
-    canDelete: ["super_admin", "admin"],
-    canEdit: ["super_admin", "admin"],
-    canTogglePublished: ["super_admin", "admin"],
+    canCreate: ["admin"],
+    canDelete: ["admin"],
+    canEdit: ["admin"],
+    canTogglePublished: ["admin"],
   },
   coupons: {
-    canCreate: ["super_admin", "admin"],
-    canDelete: ["super_admin", "admin"],
-    canEdit: ["super_admin", "admin"],
-    canTogglePublished: ["super_admin", "admin"],
+    canCreate: ["admin"],
+    canDelete: ["admin"],
+    canEdit: ["admin"],
+    canTogglePublished: ["admin"],
   },
   customers: {
-    canDelete: ["super_admin"],
-    canEdit: ["super_admin", "admin"],
+    canDelete: ["admin"],
+    canEdit: ["admin"],
   },
   products: {
-    canCreate: ["super_admin", "admin"],
-    canDelete: ["super_admin", "admin"],
-    canEdit: ["super_admin", "admin"],
-    canTogglePublished: ["super_admin", "admin"],
+    canCreate: ["admin"],
+    canDelete: ["admin"],
+    canEdit: ["admin"],
+    canTogglePublished: ["admin"],
   },
-  staff: {
-    canDelete: ["super_admin"],
-    canEdit: ["super_admin"],
-    canTogglePublished: ["super_admin"],
+  contacts: {
+    canDelete: ["admin"],
   },
 } as const;
 

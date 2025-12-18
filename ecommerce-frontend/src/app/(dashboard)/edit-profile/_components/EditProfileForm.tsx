@@ -18,10 +18,10 @@ import {
 
 import { profileFormSchema, ProfileFormData } from "./schema";
 import { objectToFormData } from "@/helpers/objectToFormData";
-import { SBStaff } from "@/services/staff/types";
+import { User } from "@/helpers/getUser";
 import { editProfile } from "@/actions/profile/editProfile";
 
-export default function EditProfileForm({ profile }: { profile: SBStaff }) {
+export default function EditProfileForm({ profile }: { profile: User }) {
   const queryClient = useQueryClient();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -56,7 +56,6 @@ export default function EditProfileForm({ profile }: { profile: SBStaff }) {
           position: "top-center",
           description: "Redirecting to dashboard...",
         });
-        queryClient.invalidateQueries({ queryKey: ["staff"] });
         queryClient.invalidateQueries({ queryKey: ["user-profile"] });
         setIsSuccess(true);
       }

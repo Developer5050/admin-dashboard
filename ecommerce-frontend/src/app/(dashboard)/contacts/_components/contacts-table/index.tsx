@@ -3,48 +3,49 @@
 import { useSearchParams } from "next/navigation";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 
-import StaffTable from "./Table";
+import ContactsTable from "./Table";
 import { getColumns, skeletonColumns } from "./columns";
 import TableError from "@/components/shared/table/TableError";
 import TableSkeleton from "@/components/shared/table/TableSkeleton";
 
 import { getSearchParams } from "@/helpers/getSearchParams";
-import { fetchStaff } from "@/services/staff";
+import { fetchContacts } from "@/services/contacts";
 import { useAuthorization } from "@/hooks/use-authorization";
 
-export default function AllStaff() {
-  const { hasPermission, isSelf } = useAuthorization();
-  const columns = getColumns({ hasPermission, isSelf });
-  const { page, limit, search, role } = getSearchParams(useSearchParams());
+export default function AllContacts() {
+  const { hasPermission } = useAuthorization();
+  const columns = getColumns({ hasPermission });
+  const { page, limit, search } = getSearchParams(useSearchParams());
 
   const {
-    data: staff,
+    data: contacts,
     isLoading,
     isError,
     refetch,
   } = useQuery({
-    queryKey: ["staff", page, limit, search, role],
+    queryKey: ["contacts", page, limit, search],
     queryFn: () =>
-      fetchStaff({ page, limit, search, role }),
+      fetchContacts({ page, limit, search }),
     placeholderData: keepPreviousData,
   });
 
   if (isLoading)
     return <TableSkeleton perPage={limit} columns={skeletonColumns} />;
 
-  if (isError || !staff)
+  if (isError || !contacts)
     return (
       <TableError
-        errorMessage="Something went wrong while trying to fetch staff."
+        errorMessage="Something went wrong while trying to fetch contacts."
         refetch={refetch}
       />
     );
 
   return (
-    <StaffTable
+    <ContactsTable
       columns={columns}
-      data={staff.data}
-      pagination={staff.pagination}
+      data={contacts.data}
+      pagination={contacts.pagination}
     />
   );
 }
+

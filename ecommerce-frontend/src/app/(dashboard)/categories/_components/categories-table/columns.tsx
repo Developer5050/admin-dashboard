@@ -12,7 +12,7 @@ import { TableActionAlertDialog } from "@/components/shared/table/TableActionAle
 import CategoryFormSheet from "../form/CategoryFormSheet";
 import { Category } from "@/services/categories/types";
 import { SkeletonColumn } from "@/types/skeleton";
-import { StaffBadgeVariants } from "@/constants/badge";
+import { CategoryBadgeVariants } from "@/constants/badge";
 
 import { editCategory } from "@/actions/categories/editCategory";
 import { deleteCategory } from "@/actions/categories/deleteCategory";
@@ -54,7 +54,7 @@ export const getColumns = ({
     header: "Status",
     cell: ({ row }) => {
       const status = row.original.status || "active";
-      const badgeVariant = StaffBadgeVariants[status as keyof typeof StaffBadgeVariants] || "secondary";
+      const badgeVariant = CategoryBadgeVariants[status as keyof typeof CategoryBadgeVariants] || "secondary";
       
       return (
         <Badge

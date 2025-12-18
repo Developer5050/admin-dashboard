@@ -3,7 +3,7 @@ import { LuUsers2 } from "react-icons/lu";
 import { TbTruckDelivery } from "react-icons/tb";
 import { RiCoupon2Line } from "react-icons/ri";
 import { TbTag } from "react-icons/tb";
-import { TbBriefcase } from "react-icons/tb";
+import { TbMessageCircle } from "react-icons/tb";
 import { MdOutlineShoppingCart } from "react-icons/md";
 
 export const navItems = [
@@ -38,8 +38,8 @@ export const navItems = [
     icon: <RiCoupon2Line />,
   },
   {
-    title: "Staff",
-    url: "/staff",
-    icon: <TbBriefcase />,
+    title: "Contact",
+    url: "/contacts",
+    icon: <TbMessageCircle />,
   },
 ];
