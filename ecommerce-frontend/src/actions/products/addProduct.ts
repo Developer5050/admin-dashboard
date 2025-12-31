@@ -10,10 +10,32 @@ import { ProductServerActionResponse } from "@/types/server-action";
 export async function addProduct(
   formData: FormData
 ): Promise<ProductServerActionResponse> {
+  // Get main image (single)
+  const mainImage = formData.get("image");
+  const mainImageFile = mainImage instanceof File && mainImage.size > 0 ? mainImage : null;
+
+  // Get additional images (multiple)
+  const additionalImages: File[] = [];
+  const imagesData = formData.getAll("images");
+  imagesData.forEach((img) => {
+    if (img instanceof File && img.size > 0) {
+      additionalImages.push(img);
+    }
+  });
+
+  // Combine main image and additional images
+  const allImages: File[] = [];
+  if (mainImageFile) {
+    allImages.push(mainImageFile);
+  }
+  allImages.push(...additionalImages);
+
   const parsedData = productFormSchema.safeParse({
     name: formData.get("name"),
     description: formData.get("description"),
-    image: formData.get("image"),
+    shortDescription: formData.get("shortDescription"),
+    image: mainImageFile || undefined,
+    images: additionalImages.length > 0 ? additionalImages : undefined,
     sku: formData.get("sku"),
     category: formData.get("category"),
     costPrice: formData.get("costPrice"),
@@ -32,12 +54,11 @@ export async function addProduct(
     };
   }
 
-  // Validate that image is a File (required for new products)
-  const image = formData.get("image");
-  if (!(image instanceof File) || image.size === 0) {
+  // Validate that at least one image is provided (required for new products)
+  if (allImages.length === 0) {
     return {
       validationErrors: {
-        image: "Product image is required",
+        image: "At least one product image is required",
       },
     };
   }
@@ -57,6 +78,7 @@ export async function addProduct(
     const apiFormData = new FormData();
     apiFormData.append("name", parsedData.data.name);
     apiFormData.append("description", parsedData.data.description);
+    apiFormData.append("shortDescription", parsedData.data.shortDescription);
     apiFormData.append("sku", parsedData.data.sku);
     apiFormData.append("category", parsedData.data.category);
     apiFormData.append("costPrice", String(parsedData.data.costPrice));
@@ -65,7 +87,13 @@ export async function addProduct(
     apiFormData.append("minStockThreshold", String(parsedData.data.minStockThreshold));
     apiFormData.append("slug", parsedData.data.slug);
     apiFormData.append("status", parsedData.data.status || "draft");
-    apiFormData.append("image", image);
+    
+    // Append all images (main image + additional images)
+    allImages.forEach((image) => {
+      if (image instanceof File) {
+        apiFormData.append("images", image);
+      }
+    });
 
     // Call backend API
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";

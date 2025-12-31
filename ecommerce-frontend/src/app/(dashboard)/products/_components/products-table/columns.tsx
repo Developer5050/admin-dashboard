@@ -167,7 +167,8 @@ export const getColumns = ({
                 initialData={{
                   name: row.original.name,
                   description: row.original.description ?? "",
-                  image: row.original.image_url,
+                  image: row.original.image_url || undefined,
+                  images: row.original.images && row.original.images.length > 1 ? row.original.images.slice(1) : undefined,
                   sku: row.original.sku,
                   category: row.original.category_id,
                   costPrice: row.original.cost_price,
@@ -178,7 +179,8 @@ export const getColumns = ({
                   status: row.original.status || "draft",
                 }}
                 action={(formData) => editProduct(row.original.id, formData)}
-                previewImage={row.original.image_url}
+                previewMainImage={row.original.image_url || undefined}
+                previewImage={row.original.images && row.original.images.length > 1 ? row.original.images.slice(1) : undefined}
               >
                 <SheetTooltip content="Edit Product">
                   <PenSquare className="size-5" />

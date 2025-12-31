@@ -17,6 +17,7 @@ const addProduct = async (req, res) => {
     const {
       name,
       description,
+      shortDescription,
       sku,
       category,
       costPrice,
@@ -28,7 +29,7 @@ const addProduct = async (req, res) => {
     } = normalizedBody;
 
     // Validate required fields
-    if (!name || !description || !sku || !category || !costPrice || !salesPrice || !quantity || !minStockThreshold) {
+    if (!name || !description || !shortDescription || !sku || !category || !costPrice || !salesPrice || !quantity || !minStockThreshold) {
       return res.status(400).json({
         success: false,
         message: "All fields are required",
@@ -36,16 +37,24 @@ const addProduct = async (req, res) => {
       });
     }
 
-    // IMAGE CHECK
-    if (!req.file) {
+    // Validate shortDescription length
+    if (shortDescription.trim().length > 200) {
       return res.status(400).json({
         success: false,
-        message: "Product image is required",
+        message: "Short description must be 200 characters or less",
       });
     }
 
-    // Save file path instead of base64
-    const productImage = `/uploads/products/${req.file.filename}`;
+    // IMAGES CHECK
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "At least one product image is required",
+      });
+    }
+
+    // Save file paths as array
+    const productImages = req.files.map(file => `/uploads/products/${file.filename}`);
 
     // Generate slug if not provided (trim slug value if it exists)
     const slugValue = slug && typeof slug === 'string' ? slug.trim() : slug;
@@ -109,7 +118,9 @@ const addProduct = async (req, res) => {
       const newProduct = await Product.create({
       name: name.trim(),
       description: description.trim(),
-      image: productImage,
+      shortDescription: shortDescription.trim(),
+      images: productImages,
+      image: productImages[0], // Also set image field for backward compatibility
       sku: sku.trim(),
       category: category.trim(),
       costPrice: parsedCostPrice,
@@ -290,11 +301,19 @@ const getAllProducts = async (req, res) => {
         // Look up category name from the map
         const categoryInfo = categoryValue ? categoryMap.get(categoryValue) : null;
         
+        // Handle images: use images array if available, otherwise fallback to image field for backward compatibility
+        const productImages = product.images && Array.isArray(product.images) && product.images.length > 0
+          ? product.images
+          : (product.image ? [product.image] : []);
+        const mainImage = productImages.length > 0 ? productImages[0] : "";
+        
         return {
           id: product._id.toString(),
           name: product.name || "",
           description: product.description || "",
-          image_url: product.image || "",
+          shortDescription: product.shortDescription !== undefined ? product.shortDescription : "",
+          image_url: mainImage,
+          images: productImages,
           sku: product.sku || "",
           cost_price: product.costPrice || 0,
           selling_price: product.salesPrice || 0,
@@ -360,6 +379,7 @@ const editProduct = async (req, res) => {
     const {
       name,
       description,
+      shortDescription,
       sku,
       category,
       costPrice,
@@ -393,6 +413,24 @@ const editProduct = async (req, res) => {
         });
       }
       updateData.description = description.trim();
+    }
+
+    // Handle shortDescription
+    if (shortDescription !== undefined) {
+      if (!shortDescription || typeof shortDescription !== 'string' || !shortDescription.trim()) {
+        return res.status(400).json({
+          success: false,
+          message: "Short description cannot be empty",
+        });
+      }
+      const trimmedShortDesc = shortDescription.trim();
+      if (trimmedShortDesc.length > 200) {
+        return res.status(400).json({
+          success: false,
+          message: "Short description must be 200 characters or less",
+        });
+      }
+      updateData.shortDescription = trimmedShortDesc;
     }
 
     // Handle SKU
@@ -534,27 +572,39 @@ const editProduct = async (req, res) => {
       updateData.status = productStatus;
     }
 
-    // Handle image (optional - only update if provided)
-    if (req.file) {
-      // Delete old image file if it exists and is not a base64 data URL
-      if (existingProduct.image && !existingProduct.image.startsWith("data:")) {
-        // Remove leading slash to make it relative for path.join
-        const imagePathRelative = existingProduct.image.startsWith("/") 
-          ? existingProduct.image.substring(1) 
-          : existingProduct.image;
-        const oldImagePath = path.join(__dirname, "..", imagePathRelative);
-        // Check if file exists before deleting
-        if (fs.existsSync(oldImagePath)) {
-          try {
-            fs.unlinkSync(oldImagePath);
-          } catch (error) {
-            console.error("Error deleting old image file:", error);
-            // Continue even if deletion fails
+    // Handle images (optional - only update if provided)
+    if (req.files && req.files.length > 0) {
+      // Get existing images (handle both old 'image' field and new 'images' array)
+      const existingImages = existingProduct.images && Array.isArray(existingProduct.images) && existingProduct.images.length > 0
+        ? existingProduct.images
+        : (existingProduct.image ? [existingProduct.image] : []);
+      
+      // Delete old image files if they exist and are not base64 data URLs
+      existingImages.forEach((oldImagePath) => {
+        if (oldImagePath && !oldImagePath.startsWith("data:")) {
+          // Remove leading slash to make it relative for path.join
+          const imagePathRelative = oldImagePath.startsWith("/") 
+            ? oldImagePath.substring(1) 
+            : oldImagePath;
+          const fullImagePath = path.join(__dirname, "..", imagePathRelative);
+          // Check if file exists before deleting
+          if (fs.existsSync(fullImagePath)) {
+            try {
+              fs.unlinkSync(fullImagePath);
+            } catch (error) {
+              console.error("Error deleting old image file:", error);
+              // Continue even if deletion fails
+            }
           }
         }
+      });
+      
+      // Save new file paths as array
+      updateData.images = req.files.map(file => `/uploads/products/${file.filename}`);
+      // Also set image field for backward compatibility (use first image)
+      if (updateData.images.length > 0) {
+        updateData.image = updateData.images[0];
       }
-      // Save new file path
-      updateData.image = `/uploads/products/${req.file.filename}`;
     }
 
     // Check if there's anything to update
@@ -601,22 +651,28 @@ const deleteProduct = async (req, res) => {
             });
         }
 
-        // Delete image file if it exists
-        if (existingProduct.image && !existingProduct.image.startsWith("data:")) {
-            // Remove leading slash to make it relative for path.join
-            const imagePathRelative = existingProduct.image.startsWith("/") 
-                ? existingProduct.image.substring(1) 
-                : existingProduct.image;
-            const imagePath = path.join(__dirname, "..", imagePathRelative);
-            if (fs.existsSync(imagePath)) {
-                try {
-                    fs.unlinkSync(imagePath);
-                } catch (error) {
-                    console.error("Error deleting product image file:", error);
-                    // Continue with deletion even if file deletion fails
+        // Delete image files if they exist (handle both images array and old image field)
+        const imagesToDelete = existingProduct.images && Array.isArray(existingProduct.images) && existingProduct.images.length > 0
+            ? existingProduct.images
+            : (existingProduct.image ? [existingProduct.image] : []);
+        
+        imagesToDelete.forEach((imagePath) => {
+            if (imagePath && !imagePath.startsWith("data:")) {
+                // Remove leading slash to make it relative for path.join
+                const imagePathRelative = imagePath.startsWith("/") 
+                    ? imagePath.substring(1) 
+                    : imagePath;
+                const fullImagePath = path.join(__dirname, "..", imagePathRelative);
+                if (fs.existsSync(fullImagePath)) {
+                    try {
+                        fs.unlinkSync(fullImagePath);
+                    } catch (error) {
+                        console.error("Error deleting product image file:", error);
+                        // Continue with deletion even if file deletion fails
+                    }
                 }
             }
-        }
+        });
 
         // Delete product
         await Product.findByIdAndDelete(id);
@@ -659,22 +715,28 @@ const bulkDeleteProducts = async (req, res) => {
             });
         }
 
-        // Delete image files for all products
+        // Delete image files for all products (handle both images array and old image field)
         existingProducts.forEach((product) => {
-            if (product.image && !product.image.startsWith("data:")) {
-                // Remove leading slash to make it relative for path.join
-                const imagePathRelative = product.image.startsWith("/") 
-                    ? product.image.substring(1) 
-                    : product.image;
-                const imagePath = path.join(__dirname, "..", imagePathRelative);
-                if (fs.existsSync(imagePath)) {
-                    try {
-                        fs.unlinkSync(imagePath);
-                    } catch (error) {
-                        console.error(`Error deleting image for product ${product._id}:`, error);
+            const imagesToDelete = product.images && Array.isArray(product.images) && product.images.length > 0
+                ? product.images
+                : (product.image ? [product.image] : []);
+            
+            imagesToDelete.forEach((imagePath) => {
+                if (imagePath && !imagePath.startsWith("data:")) {
+                    // Remove leading slash to make it relative for path.join
+                    const imagePathRelative = imagePath.startsWith("/") 
+                        ? imagePath.substring(1) 
+                        : imagePath;
+                    const fullImagePath = path.join(__dirname, "..", imagePathRelative);
+                    if (fs.existsSync(fullImagePath)) {
+                        try {
+                            fs.unlinkSync(fullImagePath);
+                        } catch (error) {
+                            console.error(`Error deleting image for product ${product._id}:`, error);
+                        }
                     }
                 }
-            }
+            });
         });
 
         // Delete all products
@@ -718,6 +780,19 @@ const getProductById = async (req, res) => {
 
         // Convert product to plain object
         const productObj = product.toObject();
+
+        // Handle images: use images array if available, otherwise fallback to image field for backward compatibility
+        if (!productObj.images || !Array.isArray(productObj.images) || productObj.images.length === 0) {
+          if (productObj.image) {
+            productObj.images = [productObj.image];
+          } else {
+            productObj.images = [];
+          }
+        }
+        // Ensure shortDescription exists (for backward compatibility)
+        if (!productObj.shortDescription) {
+          productObj.shortDescription = "";
+        }
 
         // Fetch category name if category is stored as ID
         let categoryName = product.category;

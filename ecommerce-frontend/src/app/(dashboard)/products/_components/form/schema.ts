@@ -20,6 +20,22 @@ const fileSchema = z
     "Only .jpg, .jpeg, .png and .webp formats are supported"
   );
 
+const imageSchema = z
+  .union([
+    fileSchema,
+    z.string().url({ message: "Image must be a valid URL" }),
+  ])
+  .optional();
+
+const imagesSchema = z
+  .array(
+    z.union([
+      fileSchema,
+      z.string().url({ message: "Image must be a valid URL" }),
+    ])
+  )
+  .optional();
+
 export const productFormSchema = z
   .object({
     name: z
@@ -30,12 +46,12 @@ export const productFormSchema = z
       .string()
       .min(1, { message: "Product description is required" })
       .max(1000, "Product description must be 1000 characters or less"),
-    image: z
-      .union([
-        fileSchema,
-        z.string().url({ message: "Image must be a valid URL" }),
-      ])
-      .optional(),
+    shortDescription: z
+      .string()
+      .min(1, { message: "Short description is required" })
+      .max(200, "Short description must be 200 characters or less"),
+    image: imageSchema,
+    images: imagesSchema,
     sku: z
       .string()
       .min(1, { message: "SKU is required" })
@@ -98,6 +114,15 @@ export const productFormSchema = z
         message:
           "Minimum stock threshold cannot be greater than the total stock",
         path: ["minStockThreshold"],
+      });
+    }
+
+    // At least one image (main image or multiple images) is required
+    if (!data.image && (!data.images || data.images.length === 0)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "At least one product image is required (main image or additional images)",
+        path: ["image"],
       });
     }
   });

@@ -44,6 +44,8 @@ export type ProductDetails = Pick<
   | "slug"
   | "sku"
 > & {
+  shortDescription?: string;
+  images?: string[];
   categories: Pick<SBCategory, "name">;
   status?: "selling" | "out of stock" | "draft";
 };

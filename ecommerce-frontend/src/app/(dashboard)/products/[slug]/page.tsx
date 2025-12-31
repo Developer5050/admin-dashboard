@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -13,6 +12,7 @@ import { fetchProductDetails } from "@/services/products";
 import Link from "next/link";
 import { ArrowLeftIcon } from "lucide-react";
 import { ProductTabs } from "./_components/ProductTabs";
+import { ProductImageGallery } from "./_components/ProductImageGallery";
 
 type PageParams = {
   params: {
@@ -58,29 +58,12 @@ export default async function ProductDetails({ params: { slug } }: PageParams) {
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 lg:mr-28 gap-6 lg:gap-0">
-          {/* Product Image */}
-          <div className="flex-shrink-0 w-full max-w-80 mx-auto md:mx-0 md:max-w-72 xl:max-w-80 xl:ml-3 2xl:ml-12">
-            {product.image_url && product.image_url.startsWith('data:image/') ? (
-              <img
-                src={product.image_url}
-                alt={product.name || "Product image"}
-                className="w-full max-w-[340px] sm:w-[340px] aspect-square object-cover rounded-3xl sm:ml-10 sm:mt-1 mx-auto"
-              />
-            ) : product.image_url ? (
-              <Image
-                src={product.image_url}
-                alt={product.name || "Product image"}
-                width={200}
-                height={200}
-                priority
-                className="w-full aspect-square object-cover rounded-3xl"
-              />
-            ) : (
-              <div className="w-full aspect-square bg-gray-200 rounded-3xl flex items-center justify-center">
-                <Typography>No Image</Typography>
-              </div>
-            )}
-          </div>
+          {/* Product Images */}
+          <ProductImageGallery
+            mainImage={product.image_url || null}
+            images={product.images || null}
+            productName={product.name}
+          />
 
           {/* Product Information - Each line has heading and value side by side */}
           <div className="flex flex-col space-y-5 mt-4 sm:mt-0 ml-3 sm:ml-6 lg:-ml-10">
@@ -93,15 +76,17 @@ export default async function ProductDetails({ params: { slug } }: PageParams) {
               </Typography>
             </div>
 
-            {/* Second Line: Product Details heading and Details start */}
-            <div className="flex items-start flex-nowrap gap-2 sm:gap-3">
-              <Typography component="p" className="text-[14px] sm:text-[16px] font-semibold text-muted-foreground min-w-[100px] sm:min-w-[120px] flex-shrink-0">
-                Product Details:
-              </Typography>
-              <Typography component="p" className="text-[12px] sm:text-[13px] text-foreground flex-1 break-words">
-                {product.description || "No description available."}
-              </Typography>
-            </div>
+            {/* Short Description */}
+            {product.shortDescription && (
+              <div className="flex items-start flex-nowrap gap-2 sm:gap-3">
+                <Typography component="p" className="text-[14px] sm:text-[16px] font-semibold text-muted-foreground min-w-[100px] sm:min-w-[120px] flex-shrink-0">
+                  Short Description:
+                </Typography>
+                <Typography component="p" className="text-[12px] sm:text-[13px] text-foreground flex-1 break-words">
+                  {product.shortDescription}
+                </Typography>
+              </div>
+            )}
 
             {/* Third Line: Status heading and Status value */}
             <div className="flex items-center flex-nowrap gap-2 sm:gap-3">

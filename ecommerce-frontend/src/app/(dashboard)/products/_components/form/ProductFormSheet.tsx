@@ -24,6 +24,7 @@ import {
   FormTextInput,
   FormCategoryInput,
   FormImageInput,
+  FormMultipleImagesInput,
   FormPriceInput,
   FormSlugInput,
   FormStatusInput,
@@ -46,11 +47,13 @@ type BaseProductFormProps = {
 type AddProductFormProps = BaseProductFormProps & {
   initialData?: never;
   previewImage?: never;
+  previewMainImage?: never;
 };
 
 type EditProductFormProps = BaseProductFormProps & {
   initialData: Partial<ProductFormData>;
-  previewImage: string;
+  previewImage?: string | string[];
+  previewMainImage?: string;
 };
 
 type ProductFormProps = AddProductFormProps | EditProductFormProps;
@@ -62,6 +65,7 @@ export default function ProductFormSheet({
   actionVerb,
   initialData,
   previewImage,
+  previewMainImage,
   children,
   action,
 }: ProductFormProps) {
@@ -69,7 +73,8 @@ export default function ProductFormSheet({
   const [isPending, startTransition] = useTransition();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [container, setContainer] = useState(null);
-  const imageDropzoneRef = useRef<HTMLDivElement>(null);
+  const mainImageDropzoneRef = useRef<HTMLDivElement>(null);
+  const multipleImagesDropzoneRef = useRef<HTMLDivElement>(null);
   const categoryRef = useRef<HTMLButtonElement>(null);
 
   const form = useForm<ProductFormData>({
@@ -77,7 +82,9 @@ export default function ProductFormSheet({
     defaultValues: {
       name: "",
       description: "",
+      shortDescription: "",
       image: undefined,
+      images: undefined,
       sku: "",
       category: "",
       costPrice: 0,
@@ -99,6 +106,7 @@ export default function ProductFormSheet({
   
     formData.append("name", data.name);
     formData.append("description", data.description);
+    formData.append("shortDescription", data.shortDescription);
     formData.append("sku", data.sku);
     formData.append("category", data.category);
     formData.append("costPrice", String(data.costPrice));
@@ -112,8 +120,20 @@ export default function ProductFormSheet({
     formData.append("slug", data.slug);
     formData.append("status", data.status);
   
-    if (data.image instanceof File) {
+    // Append main image (single)
+    if (data.image && data.image instanceof File) {
       formData.append("image", data.image);
+      // Also add to images array for backward compatibility
+      formData.append("images", data.image);
+    }
+  
+    // Append additional images (multiple)
+    if (data.images && Array.isArray(data.images)) {
+      data.images.forEach((image) => {
+        if (image instanceof File) {
+          formData.append("images", image);
+        }
+      });
     }
   
     startTransition(async () => {
@@ -146,7 +166,9 @@ export default function ProductFormSheet({
 
   const onInvalid = (errors: FieldErrors<ProductFormData>) => {
     if (errors.image) {
-      imageDropzoneRef.current?.focus();
+      mainImageDropzoneRef.current?.focus();
+    } else if (errors.images) {
+      multipleImagesDropzoneRef.current?.focus();
     } else if (errors.category) {
       categoryRef.current?.focus();
     }
@@ -183,6 +205,14 @@ export default function ProductFormSheet({
                     required
                   />
 
+                  <FormTextInput
+                    control={form.control}
+                    name="shortDescription"
+                    label="Short Description"
+                    placeholder="Short description (max 200 characters)"
+                    required
+                  />
+
                   <FormTextarea
                     control={form.control}
                     name="description"
@@ -194,10 +224,17 @@ export default function ProductFormSheet({
                   <FormImageInput
                     control={form.control}
                     name="image"
-                    label="Product Image"
-                    previewImage={previewImage}
-                    ref={imageDropzoneRef}
-                    required
+                    label="Main Product Image"
+                    previewImage={previewMainImage || (previewImage && !Array.isArray(previewImage) ? previewImage : (Array.isArray(previewImage) ? previewImage[0] : undefined))}
+                    ref={mainImageDropzoneRef}
+                  />
+
+                  <FormMultipleImagesInput
+                    control={form.control}
+                    name="images"
+                    label="Additional Product Images"
+                    previewImages={previewImage && Array.isArray(previewImage) && previewImage.length > 1 ? previewImage.slice(1) : undefined}
+                    ref={multipleImagesDropzoneRef}
                   />
 
                   <FormTextInput

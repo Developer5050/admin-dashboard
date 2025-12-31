@@ -9,6 +9,12 @@ const productSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    shortDescription: {
+        type: String,
+        required: false,
+        default: "",
+        maxlength: 200
+    },
     averageRating: {
         type: Number,
         default: 0
@@ -17,9 +23,14 @@ const productSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    // Keep image field for backward compatibility with old products
     image: {
         type: String,
-        required: true
+        required: false
+    },
+    images: {
+        type: [String],
+        required: false
     },
     sku: {
         type: String,

@@ -5,7 +5,7 @@ const upload = require("../middleware/uploadMiddleware");
 const { addProduct, getAllProducts, editProduct, deleteProduct, getProductById, bulkDeleteProducts } = require("../controllers/productControllers");
 
 // Add Product Route
-router.post("/add-product", authMiddleware, upload.single("image"), addProduct);
+router.post("/add-product", authMiddleware, upload.array("images", 20), addProduct);
 
 // Get All Products Route
 router.get("/get-all-products", authMiddleware, getAllProducts);
@@ -14,7 +14,7 @@ router.get("/get-all-products", authMiddleware, getAllProducts);
 router.get("/get-product/:id", authMiddleware, getProductById);
 
 // Edit Product Route
-router.put("/edit-product/:id", authMiddleware, upload.single("image"), editProduct);
+router.put("/edit-product/:id", authMiddleware, upload.array("images", 20), editProduct);
 
 // Delete Product Route
 router.delete("/delete-product/:id", authMiddleware, deleteProduct);

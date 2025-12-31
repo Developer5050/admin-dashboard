@@ -11,14 +11,25 @@ export async function editProduct(
   productId: string,
   formData: FormData
 ): Promise<ProductServerActionResponse> {
-  // Get image value - handle empty string, null, or undefined
-  const imageValue = formData.get("image");
-  const processedImage = imageValue && imageValue !== "" ? imageValue : undefined;
+  // Get main image (single)
+  const mainImage = formData.get("image");
+  const mainImageFile = mainImage instanceof File && mainImage.size > 0 ? mainImage : null;
+
+  // Get additional images (multiple)
+  const additionalImages: File[] = [];
+  const imagesData = formData.getAll("images");
+  imagesData.forEach((img) => {
+    if (img instanceof File && img.size > 0) {
+      additionalImages.push(img);
+    }
+  });
 
   const parsedData = productFormSchema.safeParse({
     name: formData.get("name"),
     description: formData.get("description"),
-    image: processedImage, // Use processed image value
+    shortDescription: formData.get("shortDescription"),
+    image: mainImageFile || undefined,
+    images: additionalImages.length > 0 ? additionalImages : undefined,
     sku: formData.get("sku"),
     category: formData.get("category"),
     costPrice: formData.get("costPrice"),
@@ -37,7 +48,20 @@ export async function editProduct(
     };
   }
 
-  const { image, ...productData } = parsedData.data;
+  const { image, images, ...productData } = parsedData.data;
+  
+  // Combine main image and additional images for backend
+  const allImages: File[] = [];
+  if (image instanceof File) {
+    allImages.push(image);
+  }
+  if (images && Array.isArray(images)) {
+    images.forEach((img) => {
+      if (img instanceof File) {
+        allImages.push(img);
+      }
+    });
+  }
 
   try {
     // Get token from cookies
@@ -52,6 +76,9 @@ export async function editProduct(
     const apiFormData = new FormData();
     apiFormData.append("name", productData.name);
     apiFormData.append("description", productData.description);
+    if (productData.shortDescription) {
+      apiFormData.append("shortDescription", productData.shortDescription);
+    }
     apiFormData.append("sku", productData.sku);
     apiFormData.append("category", productData.category);
     apiFormData.append("costPrice", String(productData.costPrice));
@@ -62,9 +89,13 @@ export async function editProduct(
     if (productData.status) {
       apiFormData.append("status", productData.status);
     }
-    // Image is optional for edit - only append if a new file is provided
-    if (image instanceof File && image.size > 0) {
-      apiFormData.append("image", image);
+    // Images are optional for edit - only append if new files are provided
+    if (allImages.length > 0) {
+      allImages.forEach((img) => {
+        if (img instanceof File && img.size > 0) {
+          apiFormData.append("images", img);
+        }
+      });
     }
 
     // Call backend API

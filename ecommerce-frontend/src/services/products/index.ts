@@ -45,14 +45,19 @@ export async function fetchProducts({
       slug: null,
     } : null);
 
-    // Handle image - backend may send image_url (already transformed) or image (raw path)
-    const imagePath = product.image_url || product.image || "";
+    // Handle images - backend may send images array or image_url/image (for backward compatibility)
+    const productImages = product.images && Array.isArray(product.images) && product.images.length > 0
+      ? product.images.map((img: string) => getImageUrl(img))
+      : (product.image_url || product.image ? [getImageUrl(product.image_url || product.image)] : []);
+    const mainImage = productImages.length > 0 ? productImages[0] : "";
     
     return {
       id: product._id?.toString() || product.id?.toString() || "",
       name: product.name || "",
       description: product.description || "",
-      image_url: getImageUrl(imagePath),
+      shortDescription: product.shortDescription || "",
+      image_url: mainImage,
+      images: productImages,
       sku: product.sku || "",
       // Handle both backend formats: costPrice (MongoDB) or cost_price (transformed)
       cost_price: product.cost_price ?? product.costPrice ?? 0,
@@ -136,7 +141,12 @@ export async function fetchProductDetails({ id }: { id: string }): Promise<{ pro
 
     // Transform backend product to frontend format
     const categoryValue = backendProduct.category || "";
-    const imagePath = backendProduct.image || backendProduct.image_url || "";
+    
+    // Handle images - backend may send images array or image/image_url (for backward compatibility)
+    const productImages = backendProduct.images && Array.isArray(backendProduct.images) && backendProduct.images.length > 0
+      ? backendProduct.images.map((img: string) => getImageUrl(img))
+      : (backendProduct.image || backendProduct.image_url ? [getImageUrl(backendProduct.image || backendProduct.image_url)] : []);
+    const mainImage = productImages.length > 0 ? productImages[0] : "";
     
     // Use categories object from backend if available, otherwise use category field
     const categories = backendProduct.categories || (categoryValue ? {
@@ -147,7 +157,9 @@ export async function fetchProductDetails({ id }: { id: string }): Promise<{ pro
       id: backendProduct._id || backendProduct.id,
       name: backendProduct.name || "",
       description: backendProduct.description || "",
-      image_url: getImageUrl(imagePath),
+      shortDescription: backendProduct.shortDescription || "",
+      image_url: mainImage,
+      images: productImages,
       sku: backendProduct.sku || "",
       cost_price: backendProduct.costPrice ?? backendProduct.cost_price ?? 0,
       selling_price: backendProduct.salesPrice ?? backendProduct.selling_price ?? 0,

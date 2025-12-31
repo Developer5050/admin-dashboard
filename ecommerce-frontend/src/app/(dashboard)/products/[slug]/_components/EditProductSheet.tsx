@@ -26,7 +26,9 @@ export async function EditProductSheet({ product, children }: Props) {
       initialData={{
         name: product.name,
         description: product.description ?? "",
-        image: product.image_url,
+        shortDescription: product.shortDescription ?? "",
+        image: product.image_url || undefined,
+        images: product.images && product.images.length > 1 ? product.images.slice(1) : undefined,
         sku: product.sku,
         category: product.category_id,
         costPrice: product.cost_price,
@@ -37,7 +39,8 @@ export async function EditProductSheet({ product, children }: Props) {
         status: product.status || "draft",
       }}
       action={(formData) => editProduct(product.id, formData)}
-      previewImage={product.image_url}
+      previewMainImage={product.image_url || undefined}
+      previewImage={product.images && product.images.length > 1 ? product.images.slice(1) : undefined}
     >
       <SheetTrigger asChild>{children}</SheetTrigger>
     </ProductFormSheet>

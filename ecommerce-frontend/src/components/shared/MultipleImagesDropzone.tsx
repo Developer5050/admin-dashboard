@@ -1,0 +1,103 @@
+"use client";
+
+import { useCallback, forwardRef, useMemo } from "react";
+import { useDropzone } from "react-dropzone";
+import Image from "next/image";
+import { XCircle, UploadCloud } from "lucide-react";
+
+import { cn } from "@/lib/utils";
+
+export const MultipleImagesDropzone = forwardRef<
+  HTMLDivElement,
+  {
+    previewImages?: string[];
+    onFilesAccepted: (files: File[]) => void;
+    onFileRemoved: (index: number) => void;
+  }
+>(function MultipleImagesDropzone({ previewImages = [], onFilesAccepted, onFileRemoved }, ref) {
+  // Use previewImages directly - they are managed by parent
+  const previews = useMemo(() => previewImages || [], [previewImages]);
+
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => {
+      if (acceptedFiles.length > 0) {
+        // Pass the files to parent component - parent will handle previews and blob URLs
+        onFilesAccepted(acceptedFiles);
+      }
+    },
+    [onFilesAccepted]
+  );
+
+  const removePreview = (index: number) => {
+    // Notify parent component to remove the file at this index
+    // Parent will handle blob URL cleanup
+    onFileRemoved(index);
+  };
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      "image/jpeg": [".jpg", ".jpeg"],
+      "image/png": [".png"],
+      "image/webp": [".webp"],
+    },
+    multiple: true,
+    noClick: false,
+    noKeyboard: false,
+  });
+
+  return (
+    <div className="w-full">
+      <div
+        {...getRootProps({
+          className: cn(
+            "border-2 border-dashed rounded-lg p-6 text-center transition-colors duration-300 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 ring-offset-background",
+            isDragActive
+              ? "border-primary/80 bg-black/10 dark:bg-white/10"
+              : "border-input"
+          ),
+          ref: ref,
+        })}
+      >
+        <input {...getInputProps()} />
+
+        <div className="flex flex-col items-center space-y-2 pointer-events-none">
+          <UploadCloud className="size-10 text-primary" />
+
+          <p className="text-sm text-foreground/80">
+            Drag your images or click here
+          </p>
+
+          <p className="text-xs italic text-muted-foreground">
+            (Only *.jpeg, *.webp and *.png images will be accepted. You can select multiple images.)
+          </p>
+        </div>
+      </div>
+
+      {previews.length > 0 && (
+        <div className="grid grid-cols-4 gap-4 mt-4">
+          {previews.map((preview, index) => (
+            <div key={index} className="size-28 p-2 rounded-md relative border border-input">
+              <Image
+                src={preview}
+                alt={`Preview ${index + 1}`}
+                width={96}
+                height={96}
+                className="size-full object-cover"
+              />
+
+              <button
+                type="button"
+                onClick={() => removePreview(index)}
+                className="absolute -top-2 -right-2 text-red-500 bg-white rounded-full"
+              >
+                <XCircle className="size-5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+});
+
