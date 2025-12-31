@@ -716,9 +716,44 @@ const getProductById = async (req, res) => {
             });
         }
 
+        // Convert product to plain object
+        const productObj = product.toObject();
+
+        // Fetch category name if category is stored as ID
+        let categoryName = product.category;
+        if (product.category && mongoose.Types.ObjectId.isValid(product.category) && product.category.length === 24) {
+            const category = await Category.findById(product.category);
+            if (category) {
+                categoryName = category.name;
+                // Add category details to product object
+                productObj.categories = {
+                    name: category.name,
+                    slug: category.slug,
+                };
+            }
+        } else if (product.category) {
+            // If category is stored as name, try to find it to get slug
+            const category = await Category.findOne({ name: product.category });
+            if (category) {
+                productObj.categories = {
+                    name: category.name,
+                    slug: category.slug,
+                };
+            } else {
+                // If category name not found in Category collection, use the stored value
+                productObj.categories = {
+                    name: product.category,
+                    slug: null,
+                };
+            }
+        }
+
+        // Update category field with name
+        productObj.category = categoryName;
+
         return res.status(200).json({
             success: true,
-            product,
+            product: productObj,
         });
     } catch (error) {
         console.error("Get Product By ID Error:", error);

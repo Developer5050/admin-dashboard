@@ -231,7 +231,78 @@ const bulkDeleteCoupons = async (req, res) => {
     }
 };
 
+// Validate Coupon
+const validateCoupon = async (req, res) => {
+    try {
+        const { code } = req.query;
+
+        if (!code) {
+            return res.status(400).json({
+                success: false,
+                message: "Coupon code is required",
+            });
+        }
+
+        // Normalize coupon code (same as in addCoupon)
+        const couponCode = slugify(code.trim(), {
+            lower: true,
+            strict: true,
+        });
+
+        // Find coupon by code
+        const coupon = await Coupon.findOne({ code: couponCode });
+
+        if (!coupon) {
+            return res.status(404).json({
+                success: false,
+                message: "Invalid coupon code",
+            });
+        }
+
+        // Check if coupon is within valid date range
+        const currentDate = new Date();
+        const startDate = new Date(coupon.startDate);
+        const endDate = new Date(coupon.endDate);
+
+        if (currentDate < startDate) {
+            return res.status(400).json({
+                success: false,
+                message: "Coupon is not yet active",
+            });
+        }
+
+        if (currentDate > endDate) {
+            return res.status(400).json({
+                success: false,
+                message: "Coupon has expired",
+            });
+        }
+
+        // Return valid coupon details
+        return res.status(200).json({
+            success: true,
+            message: "Coupon is valid",
+            data: {
+                _id: coupon._id,
+                name: coupon.name,
+                code: coupon.code,
+                isPercentageDiscount: coupon.isPercentageDiscount,
+                discountValue: coupon.discountValue,
+                startDate: coupon.startDate,
+                endDate: coupon.endDate,
+            },
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message,
+        });
+    }
+};
 
 
 
-module.exports = { addCoupon, getAllCoupons, editCoupon, deleteCoupon, bulkDeleteCoupons };
+
+module.exports = { addCoupon, getAllCoupons, editCoupon, deleteCoupon, bulkDeleteCoupons, validateCoupon };

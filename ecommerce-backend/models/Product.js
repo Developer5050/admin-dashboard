@@ -1,47 +1,55 @@
 const mongoose = require("mongoose");
 
 const productSchema = new mongoose.Schema({
-    name : {
+    name: {
         type: String,
         required: true
     },
-    description : {
+    description: {
         type: String,
         required: true
     },
-    image : {
+    averageRating: {
+        type: Number,
+        default: 0
+    },
+    totalReviews: {
+        type: Number,
+        default: 0
+    },
+    image: {
         type: String,
         required: true
     },
-    sku : {
+    sku: {
         type: String,
         required: true
     },
-    category : {
+    category: {
         type: String,
         required: true
     },
-    costPrice : {
+    costPrice: {
         type: Number,
         required: true
     },
-    salesPrice : {
+    salesPrice: {
         type: Number,
         required: true
     },
-    quantity : {
+    quantity: {
         type: Number,
         required: true
     },
-    minStockThreshold : {
+    minStockThreshold: {
         type: Number,
         required: true
     },
-    slug : {
+    slug: {
         type: String,
         required: false
     },
-    status : {
+    status: {
         type: String,
         required: true,
         enum: ["selling", "out of stock", "draft"],

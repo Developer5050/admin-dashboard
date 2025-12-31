@@ -138,6 +138,11 @@ export async function fetchProductDetails({ id }: { id: string }): Promise<{ pro
     const categoryValue = backendProduct.category || "";
     const imagePath = backendProduct.image || backendProduct.image_url || "";
     
+    // Use categories object from backend if available, otherwise use category field
+    const categories = backendProduct.categories || (categoryValue ? {
+      name: categoryValue,
+    } : null);
+    
     const product: ProductDetails = {
       id: backendProduct._id || backendProduct.id,
       name: backendProduct.name || "",
@@ -151,9 +156,7 @@ export async function fetchProductDetails({ id }: { id: string }): Promise<{ pro
       category_id: categoryValue,
       slug: backendProduct.slug || "",
       status: backendProduct.status || "draft",
-      categories: {
-        name: categoryValue,
-      },
+      categories: categories,
     };
 
     return { product };
