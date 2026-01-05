@@ -375,6 +375,17 @@ const editProduct = async (req, res) => {
       const trimmedKey = key.trim();
       normalizedBody[trimmedKey] = req.body[key];
     }
+    
+    // Handle existingImages - FormData may send multiple values with same name
+    // Check if there are multiple existingImages values
+    if (normalizedBody.existingImages) {
+      // If it's already an array, use it; otherwise convert to array
+      if (!Array.isArray(normalizedBody.existingImages)) {
+        normalizedBody.existingImages = [normalizedBody.existingImages];
+      }
+      // Filter out empty values
+      normalizedBody.existingImages = normalizedBody.existingImages.filter(img => img && img.trim() !== '');
+    }
 
     const {
       name,
@@ -573,15 +584,81 @@ const editProduct = async (req, res) => {
     }
 
     // Handle images (optional - only update if provided)
+    // Get existing images from product (handle both old 'image' field and new 'images' array)
+    const currentExistingImages = existingProduct.images && Array.isArray(existingProduct.images) && existingProduct.images.length > 0
+      ? existingProduct.images
+      : (existingProduct.image ? [existingProduct.image] : []);
+    
+    // Get existing images from request body (sent from frontend to preserve images)
+    const existingMainImageFromRequest = normalizedBody.existingMainImage 
+      ? String(normalizedBody.existingMainImage).trim() 
+      : null;
+    const existingImagesFromRequest = Array.isArray(normalizedBody.existingImages) 
+      ? normalizedBody.existingImages.filter(img => img && String(img).trim() !== '')
+      : (normalizedBody.existingImages && String(normalizedBody.existingImages).trim() !== '' 
+        ? [String(normalizedBody.existingImages).trim()] 
+        : []);
+    
+    // Determine final images array
+    let finalImages = [];
+    
+    // If new files are uploaded
     if (req.files && req.files.length > 0) {
-      // Get existing images (handle both old 'image' field and new 'images' array)
-      const existingImages = existingProduct.images && Array.isArray(existingProduct.images) && existingProduct.images.length > 0
-        ? existingProduct.images
-        : (existingProduct.image ? [existingProduct.image] : []);
+      const newImagePaths = req.files.map(file => `/uploads/products/${file.filename}`);
       
-      // Delete old image files if they exist and are not base64 data URLs
-      existingImages.forEach((oldImagePath) => {
-        if (oldImagePath && !oldImagePath.startsWith("data:")) {
+      // Determine main image:
+      // - If existingMainImage is provided, it means no new main image was uploaded, so use existing
+      // - If existingMainImage is NOT provided but we have existing images, preserve the first existing image as main
+      // - Only use a new file as main image if there are no existing images (new product scenario)
+      // IMPORTANT: When editing existing product, preserve main image unless explicitly changed
+      let finalMainImage = null;
+      
+      if (existingMainImageFromRequest) {
+        // Main image explicitly preserved from frontend
+        finalMainImage = existingMainImageFromRequest;
+      } else if (currentExistingImages.length > 0) {
+        // Editing existing product: preserve first existing image as main, all new files are additional
+        finalMainImage = currentExistingImages[0];
+      } else if (newImagePaths.length > 0) {
+        // New product or no existing images: first new file is main image
+        finalMainImage = newImagePaths[0];
+      }
+      
+      // Build final images array: main image first, then existing additional images, then new additional images
+      if (finalMainImage) {
+        finalImages.push(finalMainImage);
+      }
+      
+      // Add existing additional images (excluding main image)
+      const existingAdditionalImages = existingImagesFromRequest.length > 0 
+        ? existingImagesFromRequest 
+        : (currentExistingImages.length > 1 ? currentExistingImages.slice(1) : []);
+      
+      // Filter out main image from existing additional images to avoid duplicates
+      const filteredExistingAdditional = existingAdditionalImages.filter(img => {
+        if (!img) return false;
+        // Remove any image that matches the final main image
+        return img !== finalMainImage && img !== existingMainImageFromRequest;
+      });
+      
+      finalImages = [...finalImages, ...filteredExistingAdditional];
+      
+      // Add new additional images:
+      // CRITICAL: 
+      // - If existingMainImage was provided OR we have existing images, ALL new files are additional images
+      // - Only if no existing images AND no existingMainImage, then first new file is main image
+      const newAdditionalImages = (existingMainImageFromRequest || currentExistingImages.length > 0)
+        ? newImagePaths  // All new files are additional when main image is preserved (editing scenario)
+        : (newImagePaths.length > 1 ? newImagePaths.slice(1) : []); // Skip first (main), add rest (new product)
+      
+      if (newAdditionalImages.length > 0) {
+        finalImages = [...finalImages, ...newAdditionalImages];
+      }
+      
+      // Delete old image files that are being replaced (only if they're not in the final array)
+      currentExistingImages.forEach((oldImagePath) => {
+        // Only delete if this image is not in the final images array
+        if (!finalImages.includes(oldImagePath) && oldImagePath && !oldImagePath.startsWith("data:")) {
           // Remove leading slash to make it relative for path.join
           const imagePathRelative = oldImagePath.startsWith("/") 
             ? oldImagePath.substring(1) 
@@ -599,11 +676,35 @@ const editProduct = async (req, res) => {
         }
       });
       
-      // Save new file paths as array
-      updateData.images = req.files.map(file => `/uploads/products/${file.filename}`);
+      updateData.images = finalImages;
       // Also set image field for backward compatibility (use first image)
-      if (updateData.images.length > 0) {
-        updateData.image = updateData.images[0];
+      if (finalImages.length > 0) {
+        updateData.image = finalImages[0];
+      }
+    } else if (existingMainImageFromRequest || existingImagesFromRequest.length > 0) {
+      // No new files, but existing images are explicitly provided (user may have removed some)
+      // Use the provided existing images
+      const finalMainImage = existingMainImageFromRequest || (currentExistingImages.length > 0 ? currentExistingImages[0] : null);
+      
+      if (finalMainImage) {
+        finalImages.push(finalMainImage);
+      }
+      
+      // Add existing additional images
+      const existingAdditionalImages = existingImagesFromRequest.length > 0 
+        ? existingImagesFromRequest 
+        : (currentExistingImages.length > 1 ? currentExistingImages.slice(1) : []);
+      
+      // Filter out main image from existing additional images
+      const filteredExistingAdditional = existingAdditionalImages.filter(img => 
+        img !== finalMainImage
+      );
+      
+      finalImages = [...finalImages, ...filteredExistingAdditional];
+      
+      updateData.images = finalImages;
+      if (finalImages.length > 0) {
+        updateData.image = finalImages[0];
       }
     }
 

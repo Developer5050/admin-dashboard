@@ -11,18 +11,25 @@ export async function editProduct(
   productId: string,
   formData: FormData
 ): Promise<ProductServerActionResponse> {
-  // Get main image (single)
-  const mainImage = formData.get("image");
-  const mainImageFile = mainImage instanceof File && mainImage.size > 0 ? mainImage : null;
-
-  // Get additional images (multiple)
-  const additionalImages: File[] = [];
+  // Get existing images (string URLs) that should be preserved
+  const existingMainImage = formData.get("existingMainImage") as string | null;
+  const existingImages = formData.getAll("existingImages") as string[];
+  
+  // Get new images from "images" field (File objects)
+  // Main image is the first item, followed by additional images
+  const allImagesFromForm: File[] = [];
   const imagesData = formData.getAll("images");
   imagesData.forEach((img) => {
     if (img instanceof File && img.size > 0) {
-      additionalImages.push(img);
+      allImagesFromForm.push(img);
     }
   });
+
+  // Get main image (first image in the array) for validation
+  const mainImageFile = allImagesFromForm.length > 0 ? allImagesFromForm[0] : null;
+  
+  // Additional images are everything after the first image
+  const additionalImages = allImagesFromForm.slice(1);
 
   const parsedData = productFormSchema.safeParse({
     name: formData.get("name"),
@@ -50,18 +57,9 @@ export async function editProduct(
 
   const { image, images, ...productData } = parsedData.data;
   
-  // Combine main image and additional images for backend
-  const allImages: File[] = [];
-  if (image instanceof File) {
-    allImages.push(image);
-  }
-  if (images && Array.isArray(images)) {
-    images.forEach((img) => {
-      if (img instanceof File) {
-        allImages.push(img);
-      }
-    });
-  }
+  // Use images from formData directly (main image is first, then additional images)
+  // This ensures no duplication since form already sends them in correct order
+  const allImages: File[] = allImagesFromForm;
 
   try {
     // Get token from cookies
@@ -89,7 +87,18 @@ export async function editProduct(
     if (productData.status) {
       apiFormData.append("status", productData.status);
     }
-    // Images are optional for edit - only append if new files are provided
+    
+    // Send existing main image URL if no new main image is provided
+    if (existingMainImage && !mainImageFile) {
+      apiFormData.append("existingMainImage", existingMainImage);
+    }
+    
+    // Send existing additional image URLs to preserve them
+    existingImages.forEach((imageUrl) => {
+      apiFormData.append("existingImages", imageUrl);
+    });
+    
+    // Append new images (File objects) - only if provided
     if (allImages.length > 0) {
       allImages.forEach((img) => {
         if (img instanceof File && img.size > 0) {

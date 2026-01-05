@@ -10,25 +10,21 @@ import { ProductServerActionResponse } from "@/types/server-action";
 export async function addProduct(
   formData: FormData
 ): Promise<ProductServerActionResponse> {
-  // Get main image (single)
-  const mainImage = formData.get("image");
-  const mainImageFile = mainImage instanceof File && mainImage.size > 0 ? mainImage : null;
-
-  // Get additional images (multiple)
-  const additionalImages: File[] = [];
+  // Get all images from "images" field (backend only processes "images" field)
+  // Main image is the first item, followed by additional images
+  const allImages: File[] = [];
   const imagesData = formData.getAll("images");
   imagesData.forEach((img) => {
     if (img instanceof File && img.size > 0) {
-      additionalImages.push(img);
+      allImages.push(img);
     }
   });
 
-  // Combine main image and additional images
-  const allImages: File[] = [];
-  if (mainImageFile) {
-    allImages.push(mainImageFile);
-  }
-  allImages.push(...additionalImages);
+  // Get main image (first image in the array) for validation
+  const mainImageFile = allImages.length > 0 ? allImages[0] : null;
+  
+  // Additional images are everything after the first image
+  const additionalImages = allImages.slice(1);
 
   const parsedData = productFormSchema.safeParse({
     name: formData.get("name"),
@@ -88,7 +84,8 @@ export async function addProduct(
     apiFormData.append("slug", parsedData.data.slug);
     apiFormData.append("status", parsedData.data.status || "draft");
     
-    // Append all images (main image + additional images)
+    // Append all images to "images" array (backend expects all images in "images" field)
+    // Main image is already first in allImages array, followed by additional images
     allImages.forEach((image) => {
       if (image instanceof File) {
         apiFormData.append("images", image);

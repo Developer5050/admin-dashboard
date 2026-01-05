@@ -120,21 +120,42 @@ export default function ProductFormSheet({
     formData.append("slug", data.slug);
     formData.append("status", data.status);
   
-    // Append main image (single)
-    if (data.image && data.image instanceof File) {
-      formData.append("image", data.image);
-      // Also add to images array for backward compatibility
-      formData.append("images", data.image);
-    }
-  
-    // Append additional images (multiple)
+    // Separate existing images (string URLs) from new images (File objects)
+    const existingMainImage = data.image && typeof data.image === 'string' ? data.image : null;
+    const newMainImage = data.image && data.image instanceof File ? data.image : null;
+    
+    const existingAdditionalImages: string[] = [];
+    const newAdditionalImages: File[] = [];
+    
     if (data.images && Array.isArray(data.images)) {
       data.images.forEach((image) => {
-        if (image instanceof File) {
-          formData.append("images", image);
+        if (typeof image === 'string') {
+          existingAdditionalImages.push(image);
+        } else if (image instanceof File) {
+          newAdditionalImages.push(image);
         }
       });
     }
+  
+    // Send existing main image URL if it exists and no new main image is provided
+    if (existingMainImage && !newMainImage) {
+      formData.append("existingMainImage", existingMainImage);
+    }
+    
+    // Send existing additional image URLs
+    existingAdditionalImages.forEach((imageUrl) => {
+      formData.append("existingImages", imageUrl);
+    });
+  
+    // Append new main image as first item in "images" array (backend processes "images" field)
+    if (newMainImage) {
+      formData.append("images", newMainImage);
+    }
+  
+    // Append new additional images (multiple) - these come after main image
+    newAdditionalImages.forEach((image) => {
+      formData.append("images", image);
+    });
   
     startTransition(async () => {
       const result = await action(formData);
@@ -323,3 +344,4 @@ export default function ProductFormSheet({
     </Sheet>
   );
 }
+
