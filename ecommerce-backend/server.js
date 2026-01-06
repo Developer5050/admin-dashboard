@@ -11,6 +11,8 @@ const productRoutes = require("./routes/productRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
 const couponRoutes = require("./routes/couponRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
+const billingRoutes = require("./routes/billingRoutes");
+const orderRoutes = require("./routes/orderRoutes");
 
 const app = express();
 
@@ -34,6 +36,26 @@ app.use("/api/products", productRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/coupons", couponRoutes);
 app.use("/api/reviews", reviewRoutes);
+app.use("/api/billing", billingRoutes);
+app.use("/api/orders", orderRoutes);
+
+// 404 Handler
+app.use((req, res) => {
+    res.status(404).json({
+        success: false,
+        message: "Route not found"
+    });
+});
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+    console.error("Error:", err);
+    res.status(err.status || 500).json({
+        success: false,
+        message: err.message || "Server configuration error. Please contact support or try again later.",
+        error: process.env.NODE_ENV === "development" ? err.stack : undefined
+    });
+});
 
 // Start
 app.listen(process.env.PORT, () => {
