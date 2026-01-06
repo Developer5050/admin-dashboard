@@ -171,6 +171,8 @@ const getAllOrders = async (req, res) => {
                 updated_at: order.updatedAt.toISOString(),
                 customers: billing ? {
                     name: `${billing.firstName || ''} ${billing.lastName || ''}`.trim(),
+                    firstName: billing.firstName || '',
+                    lastName: billing.lastName || '',
                     email: billing.email || '',
                     phone: billing.phone || '',
                     address: billing.address || ''
@@ -235,6 +237,8 @@ const getOrderById = async (req, res) => {
             status: order.status,
             customers: {
                 name: `${billing.firstName || ''} ${billing.lastName || ''}`.trim(),
+                firstName: billing.firstName || '',
+                lastName: billing.lastName || '',
                 email: billing.email || '',
                 phone: billing.phone || '',
                 address: billing.address || ''

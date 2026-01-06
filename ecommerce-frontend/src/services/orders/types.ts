@@ -12,7 +12,10 @@ export type SBOrder = Database["public"]["Tables"]["orders"]["Row"];
 type SBOrderItems = Database["public"]["Tables"]["order_items"]["Row"];
 
 export type Order = SBOrder & {
-  customers: Pick<SBCustomer, "name"> | null;
+  customers: (Pick<SBCustomer, "name"> & {
+    firstName?: string;
+    lastName?: string;
+  }) | null;
 };
 
 export interface FetchOrdersParams {

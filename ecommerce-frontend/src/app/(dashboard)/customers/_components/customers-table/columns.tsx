@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { ZoomIn, PenSquare, Trash2 } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
-import { format } from "date-fns";
 import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
@@ -41,12 +40,18 @@ export const getColumns = ({
       ),
     },
     {
-      header: "joining date",
-      cell: ({ row }) => format(row.original.created_at, "PP"),
+      header: "first name",
+      cell: ({ row }) => {
+        const nameParts = row.original.name.split(" ");
+        return nameParts[0] || row.original.name;
+      },
     },
     {
-      header: "name",
-      cell: ({ row }) => row.original.name,
+      header: "last name",
+      cell: ({ row }) => {
+        const nameParts = row.original.name.split(" ");
+        return nameParts.slice(1).join(" ") || "—";
+      },
     },
     {
       header: "email",
@@ -143,11 +148,11 @@ export const skeletonColumns: SkeletonColumn[] = [
     cell: <Skeleton className="w-10 h-8" />,
   },
   {
-    header: "joining date",
-    cell: <Skeleton className="w-20 h-8" />,
+    header: "first name",
+    cell: <Skeleton className="w-24 h-8" />,
   },
   {
-    header: "name",
+    header: "last name",
     cell: <Skeleton className="w-24 h-8" />,
   },
   {

@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { ZoomIn } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
-import { format } from "date-fns";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,18 +33,18 @@ export const getColumns = ({
       cell: ({ row }) => row.original.invoice_no,
     },
     {
-      header: "order time",
-      cell: ({ row }) =>
-        `${format(row.original.order_time, "PP")} ${format(
-          row.original.order_time,
-          "p"
-        )}`,
-    },
-    {
-      header: "customer name",
+      header: "first name",
       cell: ({ row }) => (
         <span className="block max-w-52 truncate">
-          {row.original.customers?.name}
+          {row.original.customers?.firstName || "-"}
+        </span>
+      ),
+    },
+    {
+      header: "last name",
+      cell: ({ row }) => (
+        <span className="block max-w-52 truncate">
+          {row.original.customers?.lastName || "-"}
         </span>
       ),
     },
@@ -139,11 +138,11 @@ export const skeletonColumns: SkeletonColumn[] = [
     cell: <Skeleton className="w-20 h-8" />,
   },
   {
-    header: "order time",
+    header: "first name",
     cell: <Skeleton className="w-32 h-8" />,
   },
   {
-    header: "customer name",
+    header: "last name",
     cell: <Skeleton className="w-32 h-8" />,
   },
   {
