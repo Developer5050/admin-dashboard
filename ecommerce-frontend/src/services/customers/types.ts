@@ -46,7 +46,11 @@ export type CustomerOrder = Pick<
   | "total_amount"
   | "status"
 > & {
-  customers: Pick<SBCustomer, "name" | "address" | "phone">;
+  customers: Pick<SBCustomer, "name" | "address" | "phone"> & {
+    firstName?: string;
+    lastName?: string;
+    company?: string;
+  };
   order_items?: Array<{
     quantity: number;
     unit_price: number;

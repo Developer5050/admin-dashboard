@@ -473,7 +473,7 @@ const getOrdersByBillingId = async (req, res) => {
 
         // Get all orders for this billing
         const orders = await Order.find({ billing: id })
-            .populate('billing', 'firstName lastName email phone address city country')
+            .populate('billing', 'firstName lastName email phone address city country company')
             .populate('orderItems.product', 'name sku salesPrice images')
             .sort({ orderTime: -1 });
 
@@ -490,6 +490,9 @@ const getOrdersByBillingId = async (req, res) => {
                 status: order.status,
                 customers: billingData ? {
                     name: `${billingData.firstName || ''} ${billingData.lastName || ''}`.trim(),
+                    firstName: billingData.firstName || '',
+                    lastName: billingData.lastName || '',
+                    company: billingData.company || '',
                     address: billingData.address || '',
                     phone: billingData.phone || ''
                 } : null,

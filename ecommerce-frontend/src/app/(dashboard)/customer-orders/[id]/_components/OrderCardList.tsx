@@ -53,8 +53,8 @@ export default function OrderCardList({ orders }: OrderCardListProps) {
       {orders.map((order) => (
         <Card key={order.id} className="overflow-hidden">
           <CardHeader className="pb-3">
-            <div className="flex items-start justify-between">
-              <div className="space-y-1">
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-1 flex-1">
                 <Typography variant="h4" className="font-semibold">
                   Invoice #{order.invoice_no}
                 </Typography>
@@ -65,18 +65,57 @@ export default function OrderCardList({ orders }: OrderCardListProps) {
                   </span>
                 </div>
               </div>
-              <Badge
-                variant={OrderBadgeVariants[order.status]}
-                className="flex-shrink-0 text-xs capitalize"
-              >
-                {order.status}
-              </Badge>
+              <div className="flex flex-col items-end gap-2">
+                <Badge
+                  variant={OrderBadgeVariants[order.status]}
+                  className="text-xs capitalize"
+                >
+                  {order.status}
+                </Badge>
+              </div>
             </div>
           </CardHeader>
 
           <CardContent className="space-y-4">
+            {/* FirstName and LastName */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Shipping Address */}
+              <div className="flex items-start gap-3">
+                <div className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <Typography variant="p" className="text-xs text-muted-foreground mb-1">
+                    First Name
+                  </Typography>
+                  <Typography>
+                    {order.customers?.firstName || "—"}
+                  </Typography>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <Typography variant="p" className="text-xs text-muted-foreground mb-1">
+                    Last Name
+                  </Typography>
+                  <Typography>
+                    {order.customers?.lastName || "—"}
+                  </Typography>
+                </div>
+              </div>
+            </div>
+
+            {/* Company and Shipping Address */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-start gap-3">
+                <div className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <Typography variant="p" className="text-xs text-muted-foreground mb-1">
+                    Company
+                  </Typography>
+                  <Typography>
+                    {order.customers?.company || "—"}
+                  </Typography>
+                </div>
+              </div>
               <div className="flex items-start gap-3">
                 <IoLocationOutline className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
@@ -88,8 +127,10 @@ export default function OrderCardList({ orders }: OrderCardListProps) {
                   </Typography>
                 </div>
               </div>
+            </div>
 
-              {/* Phone */}
+            {/* Phone and Payment Method */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-start gap-3">
                 <IoCallOutline className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
@@ -99,8 +140,6 @@ export default function OrderCardList({ orders }: OrderCardListProps) {
                   <Typography>{order.customers?.phone || "—"}</Typography>
                 </div>
               </div>
-
-              {/* Payment Method */}
               <div className="flex items-start gap-3">
                 <IoCardOutline className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
@@ -112,8 +151,10 @@ export default function OrderCardList({ orders }: OrderCardListProps) {
                   </Typography>
                 </div>
               </div>
+            </div>
 
-              {/* Amount */}
+            {/* Total Amount and Status Change */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-start gap-3">
                 <div className="h-5 w-5 mt-0.5 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
@@ -125,6 +166,33 @@ export default function OrderCardList({ orders }: OrderCardListProps) {
                   </Typography>
                 </div>
               </div>
+              {canChangeStatus && (
+                <div className="flex items-start gap-3">
+                  <div className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <Typography variant="p" className="text-xs text-muted-foreground mb-1">
+                      Status
+                    </Typography>
+                    <Select
+                      disabled={isPending}
+                      value={order.status}
+                      onValueChange={(value) =>
+                        handleStatusChange(order.id, value as OrderStatus)
+                      }
+                    >
+                      <SelectTrigger className="capitalize min-w-32">
+                        <SelectValue placeholder={order.status} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="processing">Processing</SelectItem>
+                        <SelectItem value="delivered">Delivered</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Product Details */}
@@ -180,34 +248,6 @@ export default function OrderCardList({ orders }: OrderCardListProps) {
                       </div>
                     </div>
                   ))}
-                </div>
-              </div>
-            )}
-
-            {/* Status Change Action */}
-            {canChangeStatus && (
-              <div className="pt-4 border-t">
-                <div className="flex items-center justify-between">
-                  <Typography variant="p" className="text-xs text-muted-foreground">
-                    Change Status
-                  </Typography>
-                  <Select
-                    disabled={isPending}
-                    value={order.status}
-                    onValueChange={(value) =>
-                      handleStatusChange(order.id, value as OrderStatus)
-                    }
-                  >
-                    <SelectTrigger className="capitalize min-w-32">
-                      <SelectValue placeholder={order.status} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="processing">Processing</SelectItem>
-                      <SelectItem value="delivered">Delivered</SelectItem>
-                      <SelectItem value="cancelled">Cancelled</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
               </div>
             )}
