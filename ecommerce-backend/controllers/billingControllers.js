@@ -61,7 +61,8 @@ const addBilling = async (req, res) => {
                     product: item.productId,
                     quantity: item.quantity,
                     unitPrice: item.unitPrice,
-                    subtotal: itemSubtotal
+                    subtotal: itemSubtotal,
+                    images: item.images || []
                 });
             }
 

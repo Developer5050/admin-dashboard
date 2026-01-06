@@ -1,6 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
+import Image from "next/image";
 import { IoLocationOutline, IoCallOutline, IoCardOutline, IoTimeOutline, IoCubeOutline } from "react-icons/io5";
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -15,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { formatAmount } from "@/helpers/formatAmount";
+import { getImageUrl } from "@/helpers/getImageUrl";
 import { OrderBadgeVariants } from "@/constants/badge";
 import { OrderStatus } from "@/services/orders/types";
 import { CustomerOrder } from "@/services/customers/types";
@@ -76,16 +78,16 @@ export default function OrderCardList({ orders }: OrderCardListProps) {
             </div>
           </CardHeader>
 
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6 mt-4">
             {/* FirstName and LastName */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-start gap-3">
                 <div className="h-5 w-5 mt-0.5 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <Typography variant="p" className="text-xs text-muted-foreground mb-1">
+                  <Typography variant="p" className="text-xs font-semibold text-foreground mb-1.5">
                     First Name
                   </Typography>
-                  <Typography>
+                  <Typography className="text-sm font-medium">
                     {order.customers?.firstName || "—"}
                   </Typography>
                 </div>
@@ -93,10 +95,10 @@ export default function OrderCardList({ orders }: OrderCardListProps) {
               <div className="flex items-start gap-3">
                 <div className="h-5 w-5 mt-0.5 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <Typography variant="p" className="text-xs text-muted-foreground mb-1">
+                  <Typography variant="p" className="text-xs font-semibold text-foreground mb-1.5">
                     Last Name
                   </Typography>
-                  <Typography>
+                  <Typography className="text-sm font-medium">
                     {order.customers?.lastName || "—"}
                   </Typography>
                 </div>
@@ -108,10 +110,10 @@ export default function OrderCardList({ orders }: OrderCardListProps) {
               <div className="flex items-start gap-3">
                 <div className="h-5 w-5 mt-0.5 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <Typography variant="p" className="text-xs text-muted-foreground mb-1">
+                  <Typography variant="p" className="text-xs font-semibold text-foreground mb-1.5">
                     Company
                   </Typography>
-                  <Typography>
+                  <Typography className="text-sm font-medium">
                     {order.customers?.company || "—"}
                   </Typography>
                 </div>
@@ -119,10 +121,10 @@ export default function OrderCardList({ orders }: OrderCardListProps) {
               <div className="flex items-start gap-3">
                 <IoLocationOutline className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <Typography variant="p" className="text-xs text-muted-foreground mb-1">
+                  <Typography variant="p" className="text-xs font-semibold text-foreground mb-1.5">
                     Shipping Address
                   </Typography>
-                  <Typography className="break-words">
+                  <Typography className="text-sm font-medium break-words">
                     {order.customers?.address || "—"}
                   </Typography>
                 </div>
@@ -134,19 +136,19 @@ export default function OrderCardList({ orders }: OrderCardListProps) {
               <div className="flex items-start gap-3">
                 <IoCallOutline className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <Typography variant="p" className="text-xs text-muted-foreground mb-1">
+                  <Typography variant="p" className="text-xs font-semibold text-foreground mb-1.5">
                     Phone
                   </Typography>
-                  <Typography>{order.customers?.phone || "—"}</Typography>
+                  <Typography className="text-sm font-medium">{order.customers?.phone || "—"}</Typography>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <IoCardOutline className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <Typography variant="p" className="text-xs text-muted-foreground mb-1">
+                  <Typography variant="p" className="text-xs font-semibold text-foreground mb-1.5">
                     Payment Method
                   </Typography>
-                  <Typography className="capitalize">
+                  <Typography className="text-sm font-medium capitalize">
                     {order.payment_method}
                   </Typography>
                 </div>
@@ -158,7 +160,7 @@ export default function OrderCardList({ orders }: OrderCardListProps) {
               <div className="flex items-start gap-3">
                 <div className="h-5 w-5 mt-0.5 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <Typography variant="p" className="text-xs text-muted-foreground mb-1">
+                  <Typography variant="p" className="text-xs font-semibold text-foreground mb-1.5">
                     Total Amount
                   </Typography>
                   <Typography variant="h4" className="font-semibold text-primary">
@@ -170,7 +172,7 @@ export default function OrderCardList({ orders }: OrderCardListProps) {
                 <div className="flex items-start gap-3">
                   <div className="h-5 w-5 mt-0.5 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <Typography variant="p" className="text-xs text-muted-foreground mb-1">
+                    <Typography variant="p" className="text-xs font-semibold text-foreground mb-1.5">
                       Status
                     </Typography>
                     <Select
@@ -205,49 +207,78 @@ export default function OrderCardList({ orders }: OrderCardListProps) {
                   </Typography>
                 </div>
                 <div className="space-y-3">
-                  {order.order_items.map((item, index) => (
+                  {order.order_items.map((item, index) => {
+                    const productImage = item.products.images && item.products.images.length > 0 
+                      ? getImageUrl(item.products.images[0]) 
+                      : null;
+                    
+                    return (
                     <div
                       key={index}
                       className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border"
                     >
-                      <div className="flex-1 min-w-0">
-                        <Typography variant="p" className="font-medium mb-1">
-                          {item.products.name}
-                        </Typography>
-                        {item.products.sku && (
-                          <Typography variant="p" className="text-xs text-muted-foreground">
-                            SKU: {item.products.sku}
-                          </Typography>
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        {productImage ? (
+                          productImage.startsWith("data:image/") ? (
+                            <img
+                              src={productImage}
+                              alt={item.products.name || "Product image"}
+                              className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
+                            />
+                          ) : (
+                            <Image
+                              src={productImage}
+                              alt={item.products.name || "Product image"}
+                              width={64}
+                              height={64}
+                              className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
+                            />
+                          )
+                        ) : (
+                          <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center flex-shrink-0">
+                            <IoCubeOutline className="h-6 w-6 text-muted-foreground" />
+                          </div>
                         )}
+                        <div className="flex-1 min-w-0">
+                          <Typography variant="p" className="font-semibold text-sm mb-1">
+                            {item.products.name}
+                          </Typography>
+                          {item.products.sku && (
+                            <Typography variant="p" className="text-xs text-muted-foreground font-medium">
+                              SKU: {item.products.sku}
+                            </Typography>
+                          )}
+                        </div>
                       </div>
                       <div className="flex items-center gap-6 ml-4">
                         <div className="text-center min-w-[60px]">
-                          <Typography variant="p" className="text-xs text-muted-foreground mb-1">
+                          <Typography variant="p" className="text-xs font-semibold text-foreground mb-1.5">
                             Quantity
                           </Typography>
-                          <Typography variant="p" className="font-semibold">
+                          <Typography variant="p" className="text-sm font-semibold">
                             {item.quantity}
                           </Typography>
                         </div>
                         <div className="text-center min-w-[80px]">
-                          <Typography variant="p" className="text-xs text-muted-foreground mb-1">
+                          <Typography variant="p" className="text-xs font-semibold text-foreground mb-1.5">
                             Unit Price
                           </Typography>
-                          <Typography variant="p" className="font-semibold">
+                          <Typography variant="p" className="text-sm font-semibold">
                             {formatAmount(item.unit_price)}
                           </Typography>
                         </div>
                         <div className="text-right min-w-[100px]">
-                          <Typography variant="p" className="text-xs text-muted-foreground mb-1">
+                          <Typography variant="p" className="text-xs font-semibold text-foreground mb-1.5">
                             Subtotal
                           </Typography>
-                          <Typography variant="p" className="font-semibold text-primary">
+                          <Typography variant="p" className="text-sm font-semibold text-primary">
                             {formatAmount(item.subtotal || item.quantity * item.unit_price)}
                           </Typography>
                         </div>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}

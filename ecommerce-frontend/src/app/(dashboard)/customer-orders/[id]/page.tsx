@@ -1,9 +1,12 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
+import Link from "next/link";
 import { IoBagHandle } from "react-icons/io5";
+import { ArrowLeftIcon } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import Typography from "@/components/ui/typography";
 import PageTitle from "@/components/shared/PageTitle";
 
@@ -114,7 +117,15 @@ export default async function CustomerOrders({ params: { id } }: PageParams) {
 
     return (
       <section>
-        <PageTitle>Customer Order List</PageTitle>
+        <div className="flex items-center gap-4 mb-6">
+          <Link href="/customers">
+            <Button variant="outline" size="sm">
+              <ArrowLeftIcon className="w-4 h-4 mr-2" />
+              Back
+            </Button>
+          </Link>
+          <PageTitle className="mb-0">Customer Order</PageTitle>
+        </div>
 
         {customerOrders.length === 0 ? (
           <Card className="w-full flex flex-col text-center items-center py-8">

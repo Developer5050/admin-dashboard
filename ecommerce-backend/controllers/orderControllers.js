@@ -44,7 +44,8 @@ const addOrder = async (req, res) => {
                 product: item.productId,
                 quantity: item.quantity,
                 unitPrice: item.unitPrice,
-                subtotal: itemSubtotal
+                subtotal: itemSubtotal,
+                images: item.images && item.images.length > 0 ? item.images : (product.images && product.images.length > 0 ? product.images : (product.image ? [product.image] : []))
             });
         }
 
@@ -246,8 +247,12 @@ const getOrderById = async (req, res) => {
             order_items: order.orderItems.map(item => ({
                 quantity: item.quantity,
                 unit_price: item.unitPrice,
+                subtotal: item.subtotal,
                 products: {
-                    name: item.product?.name || 'Unknown Product'
+                    name: item.product?.name || 'Unknown Product',
+                    sku: item.product?.sku || '',
+                    salesPrice: item.product?.salesPrice || 0,
+                    images: item.images && item.images.length > 0 ? item.images : (item.product?.images || [])
                 }
             })),
             coupons: order.discountAmount > 0 ? {
@@ -309,7 +314,8 @@ const updateOrder = async (req, res) => {
                     product: item.productId,
                     quantity: item.quantity,
                     unitPrice: item.unitPrice,
-                    subtotal: itemSubtotal
+                    subtotal: itemSubtotal,
+                    images: item.images && item.images.length > 0 ? item.images : (product.images && product.images.length > 0 ? product.images : (product.image ? [product.image] : []))
                 });
             }
 
@@ -504,7 +510,7 @@ const getOrdersByBillingId = async (req, res) => {
                         name: item.product?.name || 'Unknown Product',
                         sku: item.product?.sku || '',
                         salesPrice: item.product?.salesPrice || 0,
-                        images: item.product?.images || []
+                        images: item.images && item.images.length > 0 ? item.images : (item.product?.images || [])
                     }
                 }))
             };
