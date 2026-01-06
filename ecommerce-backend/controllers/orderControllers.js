@@ -450,10 +450,72 @@ const changeOrderStatus = async (req, res) => {
     }
 }
 
+// Get Orders By Billing ID
+const getOrdersByBillingId = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (!id) {
+            return res.status(400).json({
+                success: false,
+                message: "Billing ID is required",
+            });
+        }
+
+        // Check if billing exists
+        const billing = await Billing.findById(id);
+        if (!billing) {
+            return res.status(404).json({
+                success: false,
+                message: "Billing not found",
+            });
+        }
+
+        // Get all orders for this billing
+        const orders = await Order.find({ billing: id })
+            .populate('billing', 'firstName lastName email phone address city country')
+            .populate('orderItems.product', 'name sku salesPrice images')
+            .sort({ orderTime: -1 });
+
+        // Transform orders to match frontend format
+        const transformedOrders = orders.map((order) => {
+            const billingData = order.billing || {};
+            return {
+                id: order._id.toString(),
+                invoice_no: order.invoiceNo,
+                order_time: order.orderTime ? order.orderTime.toISOString() : order.createdAt.toISOString(),
+                total_amount: order.totalAmount,
+                shipping_cost: order.shippingCost,
+                payment_method: order.paymentMethod,
+                status: order.status,
+                customers: billingData ? {
+                    name: `${billingData.firstName || ''} ${billingData.lastName || ''}`.trim(),
+                    address: billingData.address || '',
+                    phone: billingData.phone || ''
+                } : null,
+            };
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Orders fetched successfully",
+            orders: transformedOrders,
+        });
+    } catch (error) {
+        console.error("Get Orders By Billing ID Error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message,
+        });
+    }
+}
+
 module.exports = {
     addOrder,
     getAllOrders,
     getOrderById,
+    getOrdersByBillingId,
     updateOrder,
     deleteOrder,
     changeOrderStatus,

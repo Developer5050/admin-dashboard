@@ -195,10 +195,25 @@ const updateBilling = async (req, res) => {
 const deleteBilling = async (req, res) => {
     try {
         const { id } = req.params;
+        
+        // Check if billing exists
+        const billing = await Billing.findById(id);
+        if (!billing) {
+            return res.status(404).json({
+                success: false,
+                message: "Billing not found",
+            });
+        }
+
+        // Delete all orders associated with this billing
+        const deleteOrdersResult = await Order.deleteMany({ billing: id });
+        
+        // Delete the billing record
         await Billing.findByIdAndDelete(id);
+        
         return res.status(200).json({
             success: true,
-            message: "Billing deleted successfully",
+            message: `Billing and ${deleteOrdersResult.deletedCount} associated order(s) deleted successfully`,
         });
     } catch (error) {
         return res.status(500).json({

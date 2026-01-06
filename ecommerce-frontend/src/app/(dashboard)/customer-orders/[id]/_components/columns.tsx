@@ -44,8 +44,8 @@ export const getColumns = ({
     {
       header: "phone",
       cell: ({ row }) => (
-        <Typography className={cn(!row.original.customers.phone && "pl-6")}>
-          {row.original.customers.phone || "—"}
+        <Typography className={cn(!row.original.customers?.phone && "pl-6")}>
+          {row.original.customers?.phone || "—"}
         </Typography>
       ),
     },
@@ -76,29 +76,28 @@ export const getColumns = ({
     },
   ];
 
-  if (hasPermission("orders", "canChangeStatus"))
-    [
-      columns.push({
-        header: "action",
-        cell: ({ row }) => {
-          return (
-            <TableSelect
-              value={row.original.status}
-              toastSuccessMessage="Order status updated successfully."
-              queryKey="orders"
-              onValueChange={(value) =>
-                changeOrderStatus(row.original.id, value as OrderStatus)
-              }
-            >
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="processing">Processing</SelectItem>
-              <SelectItem value="delivered">Delivered</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
-            </TableSelect>
-          );
-        },
-      }),
-    ];
+  if (hasPermission("orders", "canChangeStatus")) {
+    columns.push({
+      header: "action",
+      cell: ({ row }) => {
+        return (
+          <TableSelect
+            value={row.original.status}
+            toastSuccessMessage="Order status updated successfully."
+            queryKey="orders"
+            onValueChange={(value) =>
+              changeOrderStatus(row.original.id, value as OrderStatus)
+            }
+          >
+            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="processing">Processing</SelectItem>
+            <SelectItem value="delivered">Delivered</SelectItem>
+            <SelectItem value="cancelled">Cancelled</SelectItem>
+          </TableSelect>
+        );
+      },
+    });
+  }
 
   return columns;
 };

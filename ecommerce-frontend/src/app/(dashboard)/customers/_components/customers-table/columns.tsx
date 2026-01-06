@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { ZoomIn, PenSquare, Trash2 } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
-import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -18,12 +17,6 @@ import { TooltipWrapper } from "@/components/shared/table/TableActionTooltip";
 import { editCustomer } from "@/actions/customers/editCustomer";
 import { deleteCustomer } from "@/actions/customers/deleteCustomer";
 import { HasPermission } from "@/hooks/use-authorization";
-
-const handleDemoDelete = () => {
-  toast.error("Sorry, this feature is not allowed in demo mode", {
-    position: "top-center",
-  });
-};
 
 export const getColumns = ({
   hasPermission,
@@ -106,7 +99,8 @@ export const getColumns = ({
                 submitButtonText="Update Customer"
                 actionVerb="updated"
                 initialData={{
-                  name: `${row.original.firstName} ${row.original.lastName}`.trim(),
+                  firstName: row.original.firstName || "",
+                  lastName: row.original.lastName || "",
                   email: row.original.email,
                   phone: row.original.phone ?? "",
                 }}
@@ -119,28 +113,17 @@ export const getColumns = ({
             )}
 
             {hasPermission("customers", "canDelete") && (
-              <TooltipWrapper content="Delete Customer">
-                <Button
-                  onClick={handleDemoDelete}
-                  variant="ghost"
-                  size="icon"
-                  className="text-foreground"
-                >
-                  <Trash2 className="size-5" />
-                </Button>
-              </TooltipWrapper>
-
-              // <TableActionAlertDialog
-              //   title={`Delete ${row.original.name}?`}
-              //   description="This action cannot be undone. This will permanently delete this customer and associated data from the database."
-              //   tooltipContent="Delete Customer"
-              //   actionButtonText="Delete Customer"
-              //   toastSuccessMessage={`Customer "${row.original.name}" deleted successfully!`}
-              //   queryKey="customers"
-              //   action={() => deleteCustomer(row.original.id)}
-              // >
-              //   <Trash2 className="size-5" />
-              // </TableActionAlertDialog>
+              <TableActionAlertDialog
+                title={`Delete ${row.original.firstName} ${row.original.lastName}?`}
+                description="This action cannot be undone. This will permanently delete this customer and associated data from the database."
+                tooltipContent="Delete Customer"
+                actionButtonText="Delete Customer"
+                toastSuccessMessage={`Customer "${row.original.firstName} ${row.original.lastName}" deleted successfully!`}
+                queryKey="customers"
+                action={() => deleteCustomer(row.original.id)}
+              >
+                <Trash2 className="size-5" />
+              </TableActionAlertDialog>
             )}
           </div>
         );

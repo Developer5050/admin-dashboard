@@ -63,16 +63,49 @@ export async function fetchCustomers({
   }
 }
 
-export async function fetchCustomerOrders({ id }: { id: string }): Promise<{ customerOrders: CustomerOrder[] }> {
-  // TODO: Replace with Node.js backend API call
-  // Example:
-  // const response = await fetch(
-  //   `${process.env.NEXT_PUBLIC_API_URL}/api/customers/${id}/orders`,
-  //   { credentials: 'include' }
-  // );
-  // if (!response.ok) throw new Error('Failed to fetch customer orders');
-  // const data = await response.json();
-  // return { customerOrders: data };
+export async function fetchBillingById(id: string): Promise<BillingCustomer> {
+  try {
+    const response = await axiosInstance.get(`/api/billing/get-billing-by-id/${id}`);
+    
+    if (!response.data.success) {
+      throw new Error(response.data.message || "Failed to fetch billing");
+    }
 
-  throw new Error("Backend not configured. Please set up Node.js backend.");
+    return response.data.billing;
+  } catch (error: any) {
+    console.error("Error fetching billing:", error);
+    throw new Error(error.response?.data?.message || error.message || "Failed to fetch billing");
+  }
+}
+
+export async function updateBilling(id: string, billingData: Partial<BillingCustomer>): Promise<BillingCustomer> {
+  try {
+    const response = await axiosInstance.put(`/api/billing/update-billing/${id}`, billingData);
+    
+    if (!response.data.success) {
+      throw new Error(response.data.message || "Failed to update billing");
+    }
+
+    return response.data.billing;
+  } catch (error: any) {
+    console.error("Error updating billing:", error);
+    throw new Error(error.response?.data?.message || error.message || "Failed to update billing");
+  }
+}
+
+export async function fetchCustomerOrders({ id }: { id: string }): Promise<{ customerOrders: CustomerOrder[] }> {
+  try {
+    const response = await axiosInstance.get(`/api/orders/get-orders-by-billing-id/${id}`);
+    
+    if (!response.data.success) {
+      throw new Error(response.data.message || "Failed to fetch customer orders");
+    }
+
+    return {
+      customerOrders: response.data.orders || [],
+    };
+  } catch (error: any) {
+    console.error("Error fetching customer orders:", error);
+    throw new Error(error.response?.data?.message || error.message || "Failed to fetch customer orders");
+  }
 }

@@ -62,7 +62,8 @@ export default function CustomerFormSheet({
   const form = useForm<CustomerFormData>({
     resolver: zodResolver(customerFormSchema),
     defaultValues: {
-      name: "",
+      firstName: "",
+      lastName: "",
       email: "",
       phone: "",
       ...initialData,
@@ -89,8 +90,11 @@ export default function CustomerFormSheet({
         toast.error(result.dbError);
       } else {
         form.reset();
+        const customerName = result.customer.firstName && result.customer.lastName
+          ? `${result.customer.firstName} ${result.customer.lastName}`
+          : result.customer.firstName || result.customer.lastName || "Customer";
         toast.success(
-          `Customer "${result.customer.name}" ${actionVerb} successfully!`,
+          `Customer "${customerName}" ${actionVerb} successfully!`,
           { position: "top-center" }
         );
         queryClient.invalidateQueries({ queryKey: ["customers"] });
@@ -118,9 +122,16 @@ export default function CustomerFormSheet({
                 <div className="space-y-6">
                   <FormTextInput
                     control={form.control}
-                    name="name"
-                    label="Customer Name"
-                    placeholder="Customer Name"
+                    name="firstName"
+                    label="First Name"
+                    placeholder="First Name"
+                  />
+
+                  <FormTextInput
+                    control={form.control}
+                    name="lastName"
+                    label="Last Name"
+                    placeholder="Last Name"
                   />
 
                   <FormTextInput

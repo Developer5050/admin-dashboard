@@ -1,10 +1,14 @@
 import * as z from "zod";
 
 export const customerFormSchema = z.object({
-  name: z
+  firstName: z
     .string()
-    .min(1, { message: "Customer name is required" })
-    .max(100, "Customer name must be 100 characters or less"),
+    .min(1, { message: "First name is required" })
+    .max(50, "First name must be 50 characters or less"),
+  lastName: z
+    .string()
+    .min(1, { message: "Last name is required" })
+    .max(50, "Last name must be 50 characters or less"),
   email: z
     .string()
     .min(1, { message: "Customer email is required" })
