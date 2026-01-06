@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import Typography from "@/components/ui/typography";
 import PageTitle from "@/components/shared/PageTitle";
 
-import CustomerOrdersTable from "./_components/Table";
+import OrderCardList from "./_components/OrderCardList";
 import { BillingCustomer, CustomerOrder } from "@/services/customers/types";
 
 type PageParams = {
@@ -122,7 +122,7 @@ export default async function CustomerOrders({ params: { id } }: PageParams) {
             <Typography>This customer has no order yet!</Typography>
           </Card>
         ) : (
-          <CustomerOrdersTable data={customerOrders} />
+          <OrderCardList orders={customerOrders} />
         )}
       </section>
     );

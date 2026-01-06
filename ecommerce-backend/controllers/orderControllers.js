@@ -493,6 +493,17 @@ const getOrdersByBillingId = async (req, res) => {
                     address: billingData.address || '',
                     phone: billingData.phone || ''
                 } : null,
+                order_items: order.orderItems.map(item => ({
+                    quantity: item.quantity,
+                    unit_price: item.unitPrice,
+                    subtotal: item.subtotal,
+                    products: {
+                        name: item.product?.name || 'Unknown Product',
+                        sku: item.product?.sku || '',
+                        salesPrice: item.product?.salesPrice || 0,
+                        images: item.product?.images || []
+                    }
+                }))
             };
         });
 
