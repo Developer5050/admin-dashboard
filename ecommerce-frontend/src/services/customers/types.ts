@@ -4,7 +4,27 @@ import { SBOrder } from "../orders/types";
 
 export type SBCustomer = Database["public"]["Tables"]["customers"]["Row"];
 
-export type Customer = SBCustomer;
+// Billing/Customer from backend API
+export interface BillingCustomer {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  company?: string;
+  country?: string;
+  address?: string;
+  city?: string;
+  postcode?: string;
+  shipToDifferentAddress?: boolean;
+  orderNotes?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export type Customer = BillingCustomer & {
+  id: string; // Mapped from _id
+};
 
 export interface FetchCustomersParams {
   page?: number;

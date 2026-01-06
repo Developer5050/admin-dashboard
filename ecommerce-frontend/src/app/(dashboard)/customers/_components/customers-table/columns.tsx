@@ -27,31 +27,40 @@ const handleDemoDelete = () => {
 
 export const getColumns = ({
   hasPermission,
+  currentPage = 1,
+  limit = 10,
 }: {
   hasPermission: HasPermission;
+  currentPage?: number;
+  limit?: number;
 }) => {
   const columns: ColumnDef<Customer>[] = [
     {
-      header: "id",
+      header: "S.No",
+      cell: ({ row }) => {
+        const serialNumber = (currentPage - 1) * limit + row.index + 1;
+        return (
+          <Typography>
+            {serialNumber}
+          </Typography>
+        );
+      },
+    },
+    {
+      header: "first name",
       cell: ({ row }) => (
-        <Typography className="uppercase">
-          {row.original.id.slice(-4)}
+        <Typography>
+          {row.original.firstName || "—"}
         </Typography>
       ),
     },
     {
-      header: "first name",
-      cell: ({ row }) => {
-        const nameParts = row.original.name.split(" ");
-        return nameParts[0] || row.original.name;
-      },
-    },
-    {
       header: "last name",
-      cell: ({ row }) => {
-        const nameParts = row.original.name.split(" ");
-        return nameParts.slice(1).join(" ") || "—";
-      },
+      cell: ({ row }) => (
+        <Typography>
+          {row.original.lastName || "—"}
+        </Typography>
+      ),
     },
     {
       header: "email",
@@ -97,7 +106,7 @@ export const getColumns = ({
                 submitButtonText="Update Customer"
                 actionVerb="updated"
                 initialData={{
-                  name: row.original.name,
+                  name: `${row.original.firstName} ${row.original.lastName}`.trim(),
                   email: row.original.email,
                   phone: row.original.phone ?? "",
                 }}
@@ -144,7 +153,7 @@ export const getColumns = ({
 
 export const skeletonColumns: SkeletonColumn[] = [
   {
-    header: "id",
+    header: "S.No",
     cell: <Skeleton className="w-10 h-8" />,
   },
   {

@@ -14,8 +14,8 @@ import { useAuthorization } from "@/hooks/use-authorization";
 
 export default function AllCustomers() {
   const { hasPermission } = useAuthorization();
-  const columns = getColumns({ hasPermission });
   const { page, limit, search } = getSearchParams(useSearchParams());
+  const columns = getColumns({ hasPermission, currentPage: page, limit });
 
   const {
     data: customers,
