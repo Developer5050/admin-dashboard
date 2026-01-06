@@ -1,5 +1,3 @@
-// TODO: Replace all Supabase client calls with Node.js backend API calls
-
 import {
   Order,
   FetchOrdersParams,
@@ -16,48 +14,90 @@ export async function fetchOrders({
   startDate,
   endDate,
 }: FetchOrdersParams): Promise<FetchOrdersResponse> {
-  // TODO: Replace with Node.js backend API call
-  // Example:
-  // const params = new URLSearchParams({
-  //   page: page.toString(),
-  //   limit: limit.toString(),
-  //   ...(search && { search }),
-  //   ...(status && { status }),
-  //   ...(method && { method }),
-  //   ...(startDate && { startDate }),
-  //   ...(endDate && { endDate }),
-  // });
-  // const response = await fetch(
-  //   `${process.env.NEXT_PUBLIC_API_URL}/api/orders?${params}`,
-  //   { credentials: 'include' }
-  // );
-  // if (!response.ok) throw new Error('Failed to fetch orders');
-  // return await response.json();
+  try {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+      ...(search && { search }),
+      ...(status && { status }),
+      ...(method && { method }),
+      ...(startDate && { startDate }),
+      ...(endDate && { endDate }),
+    });
 
-  // Placeholder response
-  return {
-    data: [],
-    pagination: {
-      limit,
-      current: page,
-      items: 0,
-      pages: 0,
-      next: null,
-      prev: null,
-    },
-  };
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    const response = await fetch(
+      `${apiUrl}/api/orders/get-all-orders?${params}`,
+      {
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData?.message || "Failed to fetch orders");
+    }
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.message || "Failed to fetch orders");
+    }
+
+    return {
+      data: data.data || [],
+      pagination: data.pagination || {
+        limit,
+        current: page,
+        items: 0,
+        pages: 0,
+        next: null,
+        prev: null,
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    throw error;
+  }
 }
 
 export async function fetchOrderDetails({ id }: { id: string }): Promise<{ order: OrderDetails }> {
-  // TODO: Replace with Node.js backend API call
-  // Example:
-  // const response = await fetch(
-  //   `${process.env.NEXT_PUBLIC_API_URL}/api/orders/${id}`,
-  //   { credentials: 'include' }
-  // );
-  // if (!response.ok) throw new Error('Failed to fetch order details');
-  // const data = await response.json();
-  // return { order: data };
+  try {
+    if (!id) {
+      throw new Error("Order ID is required");
+    }
 
-  throw new Error("Backend not configured. Please set up Node.js backend.");
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    const response = await fetch(
+      `${apiUrl}/api/orders/get-order-by-id/${encodeURIComponent(id)}`,
+      {
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      if (response.status === 404) {
+        throw new Error("Order not found");
+      }
+      throw new Error(errorData?.message || "Failed to fetch order details");
+    }
+
+    const data = await response.json();
+
+    if (!data.success || !data.order) {
+      throw new Error(data.message || "Failed to fetch order details");
+    }
+
+    return { order: data.order };
+  } catch (error) {
+    console.error("Error fetching order details:", error);
+    throw error;
+  }
 }
