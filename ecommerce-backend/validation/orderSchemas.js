@@ -38,10 +38,10 @@ const addOrderSchema = z.object({
         .default(0)
         .optional(),
     paymentMethod: z
-        .enum(['cash', 'card', 'online', 'bank_transfer'], {
-            errorMap: () => ({ message: "Payment method must be one of: cash, card, online, bank_transfer" })
+        .enum(['credit_card', 'stripe', 'paypal'], {
+            errorMap: () => ({ message: "Payment method must be one of: credit_card, stripe, paypal" })
         })
-        .default('cash')
+        .default('credit_card')
         .optional(),
     status: z
         .enum(['pending', 'processing', 'shipped', 'delivered', 'cancelled'], {

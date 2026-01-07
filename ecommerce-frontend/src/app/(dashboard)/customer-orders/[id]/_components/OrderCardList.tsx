@@ -17,6 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import { formatAmount } from "@/helpers/formatAmount";
 import { getImageUrl } from "@/helpers/getImageUrl";
+import { formatPaymentMethod } from "@/helpers/formatPaymentMethod";
 import { OrderBadgeVariants } from "@/constants/badge";
 import { OrderStatus } from "@/services/orders/types";
 import { CustomerOrder } from "@/services/customers/types";
@@ -148,8 +149,8 @@ export default function OrderCardList({ orders }: OrderCardListProps) {
                   <Typography variant="p" className="text-xs font-semibold text-foreground mb-1.5">
                     Payment Method
                   </Typography>
-                  <Typography className="text-sm font-medium capitalize">
-                    {order.payment_method}
+                  <Typography className="text-sm font-medium">
+                    {formatPaymentMethod(order.payment_method)}
                   </Typography>
                 </div>
               </div>
@@ -188,6 +189,7 @@ export default function OrderCardList({ orders }: OrderCardListProps) {
                       <SelectContent>
                         <SelectItem value="pending">Pending</SelectItem>
                         <SelectItem value="processing">Processing</SelectItem>
+                        <SelectItem value="shipped">Shipped</SelectItem>
                         <SelectItem value="delivered">Delivered</SelectItem>
                         <SelectItem value="cancelled">Cancelled</SelectItem>
                       </SelectContent>

@@ -6,7 +6,7 @@ const mongoose = require("mongoose");
 // Add Order
 const addOrder = async (req, res) => {
     try {
-        const { billingId, orderItems, shippingCost = 0, discountAmount = 0, paymentMethod = 'cash', status = 'pending', notes = '' } = req.body;
+        const { billingId, orderItems, shippingCost = 0, discountAmount = 0, paymentMethod = 'credit_card', status = 'pending', notes = '' } = req.body;
 
         // Validate billing exists
         if (!billingId) {

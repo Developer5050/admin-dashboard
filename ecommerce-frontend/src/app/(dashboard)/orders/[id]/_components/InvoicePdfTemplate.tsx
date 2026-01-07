@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 
 import { OrderDetails } from "@/services/orders/types";
 import { OrderBadgeVariants } from "@/constants/badge";
+import { formatPaymentMethod } from "@/helpers/formatPaymentMethod";
 
 export default function InvoicePdfTemplate({ order }: { order: OrderDetails }) {
   return (
@@ -187,8 +188,8 @@ export default function InvoicePdfTemplate({ order }: { order: OrderDetails }) {
             payment method
           </Typography>
 
-          <Typography className="text-base capitalize font-semibold tracking-wide text-black">
-            {order.payment_method}
+          <Typography className="text-base font-semibold tracking-wide text-black">
+            {formatPaymentMethod(order.payment_method)}
           </Typography>
         </div>
 

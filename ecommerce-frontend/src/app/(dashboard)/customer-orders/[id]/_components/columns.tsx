@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { SelectItem } from "@/components/ui/select";
 import { formatAmount } from "@/helpers/formatAmount";
+import { formatPaymentMethod } from "@/helpers/formatPaymentMethod";
 
 import Typography from "@/components/ui/typography";
 import { TableSelect } from "@/components/shared/table/TableSelect";
@@ -52,7 +53,7 @@ export const getColumns = ({
     {
       header: "method",
       cell: ({ row }) => (
-        <span className="capitalize">{row.original.payment_method}</span>
+        <span>{formatPaymentMethod(row.original.payment_method)}</span>
       ),
     },
     {
@@ -91,6 +92,7 @@ export const getColumns = ({
           >
             <SelectItem value="pending">Pending</SelectItem>
             <SelectItem value="processing">Processing</SelectItem>
+            <SelectItem value="shipped">Shipped</SelectItem>
             <SelectItem value="delivered">Delivered</SelectItem>
             <SelectItem value="cancelled">Cancelled</SelectItem>
           </TableSelect>

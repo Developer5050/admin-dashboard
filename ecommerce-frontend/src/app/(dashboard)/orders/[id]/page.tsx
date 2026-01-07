@@ -18,6 +18,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 
 import { getDiscount } from "@/helpers/getDiscount";
+import { formatPaymentMethod } from "@/helpers/formatPaymentMethod";
 import { OrderBadgeVariants } from "@/constants/badge";
 import { fetchOrderDetails } from "@/services/orders";
 import { InvoiceActions } from "./_components/InvoiceActions";
@@ -214,8 +215,8 @@ export default async function Order({ params: { id } }: PageParams) {
                 payment method
               </Typography>
 
-              <Typography className="text-base capitalize font-semibold text-card-foreground tracking-wide print:text-black">
-                {order.payment_method}
+              <Typography className="text-base font-semibold text-card-foreground tracking-wide print:text-black">
+                {formatPaymentMethod(order.payment_method)}
               </Typography>
             </div>
 

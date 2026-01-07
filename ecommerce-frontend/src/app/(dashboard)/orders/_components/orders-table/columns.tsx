@@ -12,6 +12,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { formatAmount } from "@/helpers/formatAmount";
+import { formatPaymentMethod } from "@/helpers/formatPaymentMethod";
 
 import { TableSelect } from "@/components/shared/table/TableSelect";
 import { OrderBadgeVariants } from "@/constants/badge";
@@ -51,7 +52,7 @@ export const getColumns = ({
     {
       header: "method",
       cell: ({ row }) => (
-        <span className="capitalize">{row.original.payment_method}</span>
+        <span>{formatPaymentMethod(row.original.payment_method)}</span>
       ),
     },
     {
@@ -121,6 +122,7 @@ export const getColumns = ({
           >
             <SelectItem value="pending">Pending</SelectItem>
             <SelectItem value="processing">Processing</SelectItem>
+            <SelectItem value="shipped">Shipped</SelectItem>
             <SelectItem value="delivered">Delivered</SelectItem>
             <SelectItem value="cancelled">Cancelled</SelectItem>
           </TableSelect>
