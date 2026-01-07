@@ -24,6 +24,7 @@ export default function AllCoupons({
   const {
     data: coupons,
     isLoading,
+    isFetching,
     isError,
     refetch,
   } = useQuery({
@@ -32,7 +33,7 @@ export default function AllCoupons({
     placeholderData: keepPreviousData,
   });
 
-  if (isLoading)
+  if (isLoading || (isFetching && !coupons))
     return <TableSkeleton perPage={limit} columns={skeletonColumns} />;
 
   if (isError || !coupons)

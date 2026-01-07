@@ -24,6 +24,7 @@ export default function AllCategories({
   const {
     data: categories,
     isLoading,
+    isFetching,
     isError,
     refetch,
   } = useQuery({
@@ -33,7 +34,7 @@ export default function AllCategories({
     placeholderData: keepPreviousData,
   });
 
-  if (isLoading)
+  if (isLoading || (isFetching && !categories))
     return <TableSkeleton perPage={limit} columns={skeletonColumns} />;
 
   if (isError || !categories)

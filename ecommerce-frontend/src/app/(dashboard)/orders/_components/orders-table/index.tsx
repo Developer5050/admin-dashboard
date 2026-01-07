@@ -21,6 +21,7 @@ export default function RecentOrders() {
   const {
     data: orders,
     isLoading,
+    isFetching,
     isError,
     refetch,
   } = useQuery({
@@ -47,7 +48,7 @@ export default function RecentOrders() {
     placeholderData: keepPreviousData,
   });
 
-  if (isLoading)
+  if (isLoading || (isFetching && !orders))
     return <TableSkeleton perPage={limit} columns={skeletonColumns} />;
 
   if (isError || !orders)

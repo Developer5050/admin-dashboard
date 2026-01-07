@@ -20,6 +20,7 @@ export default function AllContacts() {
   const {
     data: contacts,
     isLoading,
+    isFetching,
     isError,
     refetch,
   } = useQuery({
@@ -29,7 +30,7 @@ export default function AllContacts() {
     placeholderData: keepPreviousData,
   });
 
-  if (isLoading)
+  if (isLoading || (isFetching && !contacts))
     return <TableSkeleton perPage={limit} columns={skeletonColumns} />;
 
   if (isError || !contacts)

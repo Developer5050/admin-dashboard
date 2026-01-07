@@ -20,6 +20,7 @@ export default function AllCustomers() {
   const {
     data: customers,
     isLoading,
+    isFetching,
     isError,
     refetch,
   } = useQuery({
@@ -29,7 +30,7 @@ export default function AllCustomers() {
     placeholderData: keepPreviousData,
   });
 
-  if (isLoading)
+  if (isLoading || (isFetching && !customers))
     return <TableSkeleton perPage={limit} columns={skeletonColumns} />;
 
   if (isError || !customers)

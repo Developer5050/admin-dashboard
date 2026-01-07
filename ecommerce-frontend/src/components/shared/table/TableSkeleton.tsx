@@ -16,7 +16,7 @@ type Props = {
 
 export default function TableSkeleton({ columns, perPage = 10 }: Props) {
   return (
-    <div className="rounded-md border overflow-hidden">
+    <div className="rounded-md border overflow-hidden bg-background">
       <Table>
         <TableHeader className="bg-popover">
           <TableRow className="hover:bg-transparent">
@@ -49,7 +49,7 @@ export default function TableSkeleton({ columns, perPage = 10 }: Props) {
         </TableBody>
       </Table>
 
-      <div className="flex flex-col md:flex-row items-center justify-between gap-3.5 p-4 bg-popover">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-3.5 p-4 bg-popover border-t">
         <Skeleton className="w-44 h-9" />
 
         <Skeleton className="w-full max-w-80 h-9" />

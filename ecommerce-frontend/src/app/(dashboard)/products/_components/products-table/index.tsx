@@ -25,6 +25,7 @@ export default function AllProducts({
   const {
     data: products,
     isLoading,
+    isFetching,
     isError,
     refetch,
   } = useQuery({
@@ -53,7 +54,7 @@ export default function AllProducts({
     placeholderData: keepPreviousData,
   });
 
-  if (isLoading)
+  if (isLoading || (isFetching && !products))
     return <TableSkeleton perPage={limit} columns={skeletonColumns} />;
 
   if (isError || !products)
