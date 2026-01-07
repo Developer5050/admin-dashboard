@@ -640,6 +640,81 @@ const getSalesStatistics = async (req, res) => {
     }
 }
 
+// Get Weekly Sales (past 7 days)
+const getWeeklySales = async (req, res) => {
+    try {
+        const now = new Date();
+        
+        // Calculate start date (6 days ago at start of day)
+        const startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6);
+        startDate.setHours(0, 0, 0, 0);
+        
+        // Calculate end date (today at end of day)
+        const endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+
+        // Aggregate orders by day
+        const dailyData = await Order.aggregate([
+            {
+                $match: {
+                    orderTime: {
+                        $gte: startDate,
+                        $lte: endDate
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        $dateToString: {
+                            format: "%Y-%m-%d",
+                            date: "$orderTime"
+                        }
+                    },
+                    sales: { $sum: "$totalAmount" },
+                    orders: { $sum: 1 }
+                }
+            },
+            {
+                $sort: { _id: -1 } // Sort descending (most recent first) to match frontend labels
+            }
+        ]);
+
+        // Create a map of existing data
+        const dataMap = {};
+        dailyData.forEach(item => {
+            dataMap[item._id] = {
+                sales: item.sales || 0,
+                orders: item.orders || 0
+            };
+        });
+
+        // Generate array for all 7 days (most recent first)
+        const result = [];
+        for (let i = 0; i < 7; i++) {
+            const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+            const dateStr = date.toISOString().split('T')[0];
+            
+            result.push({
+                date: dateStr,
+                sales: dataMap[dateStr]?.sales || 0,
+                orders: dataMap[dateStr]?.orders || 0
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: result,
+        });
+    } catch (error) {
+        console.error("Get Weekly Sales Error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message,
+        });
+    }
+}
+
 module.exports = {
     addOrder,
     getAllOrders,
@@ -650,5 +725,6 @@ module.exports = {
     changeOrderStatus,
     getOrderStatistics,
     getSalesStatistics,
+    getWeeklySales,
 };
 

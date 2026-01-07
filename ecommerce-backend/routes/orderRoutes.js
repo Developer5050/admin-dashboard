@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { addOrder, getAllOrders, getOrderById, getOrdersByBillingId, updateOrder, deleteOrder, changeOrderStatus, getOrderStatistics, getSalesStatistics } = require("../controllers/orderControllers");
+const { addOrder, getAllOrders, getOrderById, getOrdersByBillingId, updateOrder, deleteOrder, changeOrderStatus, getOrderStatistics, getSalesStatistics, getWeeklySales } = require("../controllers/orderControllers");
 const validateRequest = require("../validation/validateRequest");
 const { addOrderSchema, updateOrderSchema, changeStatusSchema } = require("../validation/orderSchemas");
 const authMiddleware = require("../middleware/authMiddleware");
@@ -31,6 +31,9 @@ router.get("/statistics", authMiddleware, getOrderStatistics);
 
 // Get Sales Statistics Route
 router.get("/sales-statistics", authMiddleware, getSalesStatistics);
+
+// Get Weekly Sales Route
+router.get("/weekly-sales", authMiddleware, getWeeklySales);
 
 module.exports = router;
 
