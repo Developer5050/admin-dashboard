@@ -715,6 +715,83 @@ const getWeeklySales = async (req, res) => {
     }
 }
 
+// Get Best Sellers (top 4 products by quantity sold)
+const getBestSellers = async (req, res) => {
+    try {
+        // Aggregate order items to find top products by quantity sold
+        const bestSellers = await Order.aggregate([
+            // Unwind orderItems array to work with individual items
+            {
+                $unwind: "$orderItems"
+            },
+            // Group by product ID and sum quantities
+            {
+                $group: {
+                    _id: "$orderItems.product",
+                    totalQuantity: { $sum: "$orderItems.quantity" }
+                }
+            },
+            // Lookup product details to get product name
+            {
+                $lookup: {
+                    from: "products",
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "productDetails"
+                }
+            },
+            // Unwind product details
+            {
+                $unwind: {
+                    path: "$productDetails",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            // Project only needed fields
+            {
+                $project: {
+                    _id: 0,
+                    productId: "$_id",
+                    name: "$productDetails.name",
+                    quantity: "$totalQuantity"
+                }
+            },
+            // Filter out products with no name (deleted products)
+            {
+                $match: {
+                    name: { $exists: true, $ne: null }
+                }
+            },
+            // Sort by quantity descending
+            {
+                $sort: { quantity: -1 }
+            },
+            // Limit to top 4
+            {
+                $limit: 4
+            }
+        ]);
+
+        // Format response
+        const result = bestSellers.map(item => ({
+            name: item.name || "Unknown Product",
+            quantity: item.quantity || 0
+        }));
+
+        return res.status(200).json({
+            success: true,
+            data: result,
+        });
+    } catch (error) {
+        console.error("Get Best Sellers Error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message,
+        });
+    }
+}
+
 module.exports = {
     addOrder,
     getAllOrders,
@@ -726,5 +803,6 @@ module.exports = {
     getOrderStatistics,
     getSalesStatistics,
     getWeeklySales,
+    getBestSellers,
 };
 
