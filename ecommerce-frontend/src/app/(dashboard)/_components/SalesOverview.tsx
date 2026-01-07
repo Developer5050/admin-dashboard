@@ -20,9 +20,8 @@ export default function SalesOverview() {
   } = useQuery({
     queryKey: ["sales-statistics"],
     queryFn: fetchSalesStatistics,
-    refetchInterval: 30000, // Refetch every 30 seconds
-    refetchOnWindowFocus: true, // Refetch when window regains focus
-    staleTime: 0, // Always consider data stale to ensure fresh fetch
+    refetchOnWindowFocus: false, // Don't refetch when window regains focus
+    staleTime: Infinity, // Data will never be considered stale
   });
 
   const defaultStatistics = {

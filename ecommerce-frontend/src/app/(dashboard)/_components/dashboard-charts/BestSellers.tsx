@@ -22,9 +22,8 @@ export default function BestSellers() {
   } = useQuery({
     queryKey: ["best-sellers"],
     queryFn: fetchBestSellers,
-    refetchInterval: 30000, // Refetch every 30 seconds
-    refetchOnWindowFocus: true,
-    staleTime: 0,
+    refetchOnWindowFocus: false, // Don't refetch when window regains focus
+    staleTime: Infinity, // Data will never be considered stale
   });
 
   // Default colors for the chart
