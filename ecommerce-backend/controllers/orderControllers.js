@@ -561,6 +561,85 @@ const getOrderStatistics = async (req, res) => {
     }
 }
 
+// Get Sales Statistics
+const getSalesStatistics = async (req, res) => {
+    try {
+        const now = new Date();
+        
+        // Today: Start of today to end of today
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+        
+        // Yesterday: Start of yesterday to end of yesterday
+        const startOfYesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+        const endOfYesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59, 999);
+        
+        // This Month: Start of current month to end of current month
+        const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const endOfThisMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+        
+        // Last Month: Start of previous month to end of previous month
+        const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+
+        // Helper function to calculate total sales for a date range
+        const calculateSales = async (startDate, endDate) => {
+            const result = await Order.aggregate([
+                {
+                    $match: {
+                        orderTime: {
+                            $gte: startDate,
+                            $lte: endDate
+                        }
+                    }
+                },
+                {
+                    $group: {
+                        _id: null,
+                        total: { $sum: "$totalAmount" }
+                    }
+                }
+            ]);
+            return result.length > 0 ? result[0].total : 0;
+        };
+
+        // Calculate sales for each period
+        const [today, yesterday, thisMonth, lastMonth, allTime] = await Promise.all([
+            calculateSales(startOfToday, endOfToday),
+            calculateSales(startOfYesterday, endOfYesterday),
+            calculateSales(startOfThisMonth, endOfThisMonth),
+            calculateSales(startOfLastMonth, endOfLastMonth),
+            // All-time sales
+            Order.aggregate([
+                {
+                    $group: {
+                        _id: null,
+                        total: { $sum: "$totalAmount" }
+                    }
+                }
+            ]).then(result => result.length > 0 ? result[0].total : 0)
+        ]);
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                today: today || 0,
+                yesterday: yesterday || 0,
+                thisMonth: thisMonth || 0,
+                lastMonth: lastMonth || 0,
+                allTime: allTime || 0,
+            },
+        });
+    } catch (error) {
+        console.error("Get Sales Statistics Error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message,
+        });
+    }
+}
+
 module.exports = {
     addOrder,
     getAllOrders,
@@ -570,5 +649,6 @@ module.exports = {
     deleteOrder,
     changeOrderStatus,
     getOrderStatistics,
+    getSalesStatistics,
 };
 
