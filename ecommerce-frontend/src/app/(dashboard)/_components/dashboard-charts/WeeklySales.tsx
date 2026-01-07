@@ -20,6 +20,7 @@ export default function WeeklySales() {
   const {
     data: weeklyData,
     isLoading,
+    isFetching,
     isError,
   } = useQuery({
     queryKey: ["weekly-sales"],
@@ -59,7 +60,7 @@ export default function WeeklySales() {
           </TabsList>
 
           <TabsContent value="sales" className="relative h-60">
-            {mounted && !isLoading && !isError ? (
+            {mounted && !isLoading && !isFetching && !isError ? (
               <Line
                 data={{
                   labels,
@@ -115,7 +116,7 @@ export default function WeeklySales() {
           </TabsContent>
 
           <TabsContent value="orders" className="relative h-60">
-            {mounted && !isLoading && !isError ? (
+            {mounted && !isLoading && !isFetching && !isError ? (
               <Line
                 data={{
                   labels,

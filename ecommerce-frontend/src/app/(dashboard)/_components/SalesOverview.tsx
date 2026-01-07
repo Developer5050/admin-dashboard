@@ -15,6 +15,7 @@ export default function SalesOverview() {
   const {
     data: salesStatistics,
     isLoading,
+    isFetching,
     isError,
   } = useQuery({
     queryKey: ["sales-statistics"],
@@ -67,7 +68,7 @@ export default function SalesOverview() {
     },
   ];
 
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return (
       <div className="grid md:grid-cols-2 xl:grid-cols-5 gap-2">
         {Array.from({ length: 5 }).map((_, index) => (

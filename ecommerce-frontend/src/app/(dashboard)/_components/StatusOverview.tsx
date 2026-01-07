@@ -19,6 +19,7 @@ export default function StatusOverview() {
   const {
     data: statistics,
     isLoading,
+    isFetching,
     isError,
   } = useQuery({
     queryKey: ["order-statistics"],
@@ -68,7 +69,7 @@ export default function StatusOverview() {
     },
   ];
 
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return (
       <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, index) => (
