@@ -101,3 +101,38 @@ export async function fetchOrderDetails({ id }: { id: string }): Promise<{ order
     throw error;
   }
 }
+
+export type OrderStatistics = {
+  total: number;
+  pending: number;
+  processing: number;
+  delivered: number;
+};
+
+export async function fetchOrderStatistics(): Promise<OrderStatistics> {
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    const response = await fetch(`${apiUrl}/api/orders/statistics`, {
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData?.message || "Failed to fetch order statistics");
+    }
+
+    const data = await response.json();
+
+    if (!data.success || !data.data) {
+      throw new Error(data.message || "Failed to fetch order statistics");
+    }
+
+    return data.data;
+  } catch (error) {
+    console.error("Error fetching order statistics:", error);
+    throw error;
+  }
+}

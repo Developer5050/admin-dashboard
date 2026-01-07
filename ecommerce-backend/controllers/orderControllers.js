@@ -531,6 +531,36 @@ const getOrdersByBillingId = async (req, res) => {
     }
 }
 
+// Get Order Statistics
+const getOrderStatistics = async (req, res) => {
+    try {
+        // Get total count of all orders
+        const totalOrders = await Order.countDocuments();
+
+        // Get counts by status
+        const pendingOrders = await Order.countDocuments({ status: 'pending' });
+        const processingOrders = await Order.countDocuments({ status: 'processing' });
+        const deliveredOrders = await Order.countDocuments({ status: 'delivered' });
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                total: totalOrders,
+                pending: pendingOrders,
+                processing: processingOrders,
+                delivered: deliveredOrders,
+            },
+        });
+    } catch (error) {
+        console.error("Get Order Statistics Error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message,
+        });
+    }
+}
+
 module.exports = {
     addOrder,
     getAllOrders,
@@ -539,5 +569,6 @@ module.exports = {
     updateOrder,
     deleteOrder,
     changeOrderStatus,
+    getOrderStatistics,
 };
 

@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { addOrder, getAllOrders, getOrderById, getOrdersByBillingId, updateOrder, deleteOrder, changeOrderStatus } = require("../controllers/orderControllers");
+const { addOrder, getAllOrders, getOrderById, getOrdersByBillingId, updateOrder, deleteOrder, changeOrderStatus, getOrderStatistics } = require("../controllers/orderControllers");
 const validateRequest = require("../validation/validateRequest");
 const { addOrderSchema, updateOrderSchema, changeStatusSchema } = require("../validation/orderSchemas");
 const authMiddleware = require("../middleware/authMiddleware");
@@ -25,6 +25,9 @@ router.delete("/delete-order/:id", authMiddleware, deleteOrder);
 
 // Change Order Status Route
 router.patch("/change-status/:id", authMiddleware, validateRequest(changeStatusSchema), changeOrderStatus);
+
+// Get Order Statistics Route
+router.get("/statistics", authMiddleware, getOrderStatistics);
 
 module.exports = router;
 

@@ -40,9 +40,9 @@ export default function AppSidebar() {
                     href={navItem.url}
                     className={cn(
                       buttonVariants({ variant: "ghost" }),
-                      "relative w-full justify-start px-5 py-4 gap-x-2.5 [&_svg]:size-6 [&_svg]:flex-shrink-0 font-medium text-base focus-visible:bg-accent focus-visible:text-accent-foreground hover:bg-green-300 hover:text-green-500 transition-colors",
+                      "relative w-full justify-start px-5 py-4 gap-x-2.5 [&_svg]:size-6 [&_svg]:flex-shrink-0 font-medium text-base focus-visible:bg-accent focus-visible:text-accent-foreground hover:bg-green-200 hover:text-green-500 transition-colors",
                       pathname === navItem.url &&
-                        "bg-green-300 text-green-500 after:content-[''] after:absolute after:top-0 after:left-0 after:h-full after:w-1 after:bg-primary after:rounded-r-lg"
+                        "bg-green-200 text-green-500 after:content-[''] after:absolute after:top-0 after:left-0 after:h-full after:w-1 after:bg-primary after:rounded-r-lg"
                     )}
                   >
                     {navItem.icon} {navItem.title}
