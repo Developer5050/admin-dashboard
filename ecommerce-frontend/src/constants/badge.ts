@@ -8,6 +8,7 @@ import { BadgeVariantProps } from "@/components/ui/badge";
 export const OrderBadgeVariants: Record<OrderStatus, BadgeVariantProps> = {
   pending: "warning",
   processing: "processing",
+  shipped: "success",
   delivered: "success",
   cancelled: "destructive",
 };

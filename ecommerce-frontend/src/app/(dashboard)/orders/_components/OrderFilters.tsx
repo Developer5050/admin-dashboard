@@ -107,6 +107,7 @@ export default function OrderFilters() {
               <SelectItem value="all">All</SelectItem>
               <SelectItem value="pending">Pending</SelectItem>
               <SelectItem value="processing">Processing</SelectItem>
+              <SelectItem value="shipped">Shipped</SelectItem>
               <SelectItem value="delivered">Delivered</SelectItem>
               <SelectItem value="cancelled">Cancelled</SelectItem>
             </SelectContent>
@@ -122,9 +123,9 @@ export default function OrderFilters() {
 
             <SelectContent>
               <SelectItem value="all">All</SelectItem>
-              <SelectItem value="card">Card</SelectItem>
-              <SelectItem value="cash">Cash</SelectItem>
-              <SelectItem value="credit">Credit</SelectItem>
+              <SelectItem value="credit_card">Credit Card</SelectItem>
+              <SelectItem value="stripe">Stripe</SelectItem>
+              <SelectItem value="paypal">PayPal</SelectItem>
             </SelectContent>
           </Select>
 

@@ -47,7 +47,7 @@ export function TableSelect({
       value={value}
       onValueChange={handleValueChange}
     >
-      <SelectTrigger className="capitalize min-w-32">
+      <SelectTrigger className="capitalize min-w-20 px-2">
         <SelectValue placeholder={value} />
       </SelectTrigger>
 

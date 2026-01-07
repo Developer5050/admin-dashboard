@@ -34,20 +34,17 @@ export const getColumns = ({
       cell: ({ row }) => row.original.invoice_no,
     },
     {
-      header: "first name",
-      cell: ({ row }) => (
-        <span className="block max-w-52 truncate">
-          {row.original.customers?.firstName || "-"}
-        </span>
-      ),
-    },
-    {
-      header: "last name",
-      cell: ({ row }) => (
-        <span className="block max-w-52 truncate">
-          {row.original.customers?.lastName || "-"}
-        </span>
-      ),
+      header: "customer name",
+      cell: ({ row }) => {
+        const firstName = row.original.customers?.firstName || "";
+        const lastName = row.original.customers?.lastName || "";
+        const fullName = `${firstName} ${lastName}`.trim() || "-";
+        return (
+          <span className="block max-w-48 truncate capitalize">
+            {fullName}
+          </span>
+        );
+      },
     },
     {
       header: "method",
@@ -67,10 +64,36 @@ export const getColumns = ({
         return (
           <Badge
             variant={OrderBadgeVariants[status]}
-            className="flex-shrink-0 text-xs capitalize"
+            className="flex-shrink-0 text-xs capitalize rounded-xl"
           >
             {status}
           </Badge>
+        );
+      },
+    },
+    {
+      header: "action",
+      cell: ({ row }) => {
+        if (!hasPermission("orders", "canChangeStatus")) {
+          return <span className="text-muted-foreground">-</span>;
+        }
+        return (
+          <div className="px-2">
+            <TableSelect
+              value={row.original.status}
+              toastSuccessMessage="Order status updated successfully."
+              queryKey="orders"
+              onValueChange={(value) =>
+                changeOrderStatus(row.original.id, value as OrderStatus)
+              }
+            >
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="processing">Processing</SelectItem>
+              <SelectItem value="shipped">Shipped</SelectItem>
+              <SelectItem value="delivered">Delivered</SelectItem>
+              <SelectItem value="cancelled">Cancelled</SelectItem>
+            </TableSelect>
+          </div>
         );
       },
     },
@@ -107,30 +130,6 @@ export const getColumns = ({
     },
   ];
 
-  if (hasPermission("orders", "canChangeStatus")) {
-    columns.splice(6, 0, {
-      header: "action",
-      cell: ({ row }) => {
-        return (
-          <TableSelect
-            value={row.original.status}
-            toastSuccessMessage="Order status updated successfully."
-            queryKey="orders"
-            onValueChange={(value) =>
-              changeOrderStatus(row.original.id, value as OrderStatus)
-            }
-          >
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="processing">Processing</SelectItem>
-            <SelectItem value="shipped">Shipped</SelectItem>
-            <SelectItem value="delivered">Delivered</SelectItem>
-            <SelectItem value="cancelled">Cancelled</SelectItem>
-          </TableSelect>
-        );
-      },
-    });
-  }
-
   return columns;
 };
 
@@ -140,11 +139,7 @@ export const skeletonColumns: SkeletonColumn[] = [
     cell: <Skeleton className="w-20 h-8" />,
   },
   {
-    header: "first name",
-    cell: <Skeleton className="w-32 h-8" />,
-  },
-  {
-    header: "last name",
+    header: "full name",
     cell: <Skeleton className="w-32 h-8" />,
   },
   {
