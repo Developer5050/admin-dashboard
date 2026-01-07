@@ -11,7 +11,11 @@ const orderItemSchema = z.object({
         .min(1, "Quantity must be at least 1"),
     unitPrice: z
         .number()
-        .min(0, "Unit price must be non-negative")
+        .min(0, "Unit price must be non-negative"),
+    images: z
+        .array(z.string())
+        .optional()
+        .default([])
 });
 
 // Add order validation schema
