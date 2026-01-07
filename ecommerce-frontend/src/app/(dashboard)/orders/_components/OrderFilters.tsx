@@ -30,20 +30,30 @@ export default function OrderFilters() {
     search: searchParams.get("search") || "",
     status: searchParams.get("status") || "",
     method: searchParams.get("method") || "",
-    startDate: searchParams.get("startDate") || "",
-    endDate: searchParams.get("endDate") || "",
+    startDate: searchParams.get("start-date") || "",
+    endDate: searchParams.get("end-date") || "",
   });
 
   const handleOrdersDownload = () => {
     toast.info(`Downloading orders...`);
 
     startTransition(async () => {
-      const result = await exportOrders();
+      // Prepare filter parameters from current filters
+      const filterParams = {
+        search: filters.search || undefined,
+        status: filters.status && filters.status !== "all" ? filters.status : undefined,
+        method: filters.method && filters.method !== "all" ? filters.method : undefined,
+        startDate: filters.startDate || undefined,
+        endDate: filters.endDate || undefined,
+      };
+
+      const result = await exportOrders(filterParams);
 
       if (result.error) {
         toast.error(result.error);
       } else if (result.data) {
         exportAsCSV(result.data, "Orders");
+        toast.success("Orders downloaded successfully!");
       }
     });
   };
