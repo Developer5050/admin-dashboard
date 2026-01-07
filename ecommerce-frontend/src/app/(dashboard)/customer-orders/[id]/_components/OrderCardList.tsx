@@ -47,6 +47,7 @@ export default function OrderCardList({ orders }: OrderCardListProps) {
       } else {
         toast.success("Order status updated successfully.", { position: "top-center" });
         queryClient.invalidateQueries({ queryKey: ["orders"] });
+        queryClient.invalidateQueries({ queryKey: ["order-statistics"] });
       }
     });
   };

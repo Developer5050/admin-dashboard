@@ -37,6 +37,11 @@ export function TableSelect({
       } else {
         toast.success(toastSuccessMessage, { position: "top-center" });
         queryClient.invalidateQueries({ queryKey: [queryKey] });
+        
+        // Also invalidate order-statistics when order status changes
+        if (queryKey === "orders") {
+          queryClient.invalidateQueries({ queryKey: ["order-statistics"] });
+        }
       }
     });
   };
