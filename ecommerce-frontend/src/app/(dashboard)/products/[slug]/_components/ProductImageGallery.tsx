@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 
 type ProductImageGalleryProps = {
@@ -35,24 +35,36 @@ export function ProductImageGallery({
   };
 
   // Process images: combine images array and mainImage prop
-  // Filter out empty values
+  // Filter out empty values and validate URLs
   let allImagesList: string[] = [];
+  
+  // Helper to validate if an image URL is valid
+  const isValidImageUrl = (url: string | null | undefined): boolean => {
+    if (!url || typeof url !== 'string') return false;
+    const trimmed = url.trim();
+    if (trimmed === '') return false;
+    // Check if it's a data URL, http/https URL, or starts with /uploads/
+    return trimmed.startsWith('data:image/') || 
+           trimmed.startsWith('http://') || 
+           trimmed.startsWith('https://') || 
+           trimmed.startsWith('/uploads/');
+  };
   
   if (images && Array.isArray(images) && images.length > 0) {
     // Use images array - it contains all images (main + additional)
-    allImagesList = images.filter((img) => img && typeof img === 'string' && img.trim() !== '');
+    allImagesList = images.filter((img) => isValidImageUrl(img));
   }
   
   // Add mainImage to the list if it's not already in the images array
-  if (mainImage && typeof mainImage === 'string' && mainImage.trim() !== '') {
-    const isMainImageInList = allImagesList.some((img) => areImagesSame(img, mainImage));
+  if (isValidImageUrl(mainImage)) {
+    const isMainImageInList = allImagesList.some((img) => areImagesSame(img, mainImage!));
     if (!isMainImageInList) {
       // Add mainImage at the beginning if it's not in the array
-      allImagesList = [mainImage, ...allImagesList];
+      allImagesList = [mainImage!, ...allImagesList];
     }
-  } else if (allImagesList.length === 0 && mainImage) {
+  } else if (allImagesList.length === 0 && isValidImageUrl(mainImage)) {
     // Fallback: if no images array but mainImage exists
-    allImagesList = [mainImage];
+    allImagesList = [mainImage!];
   }
   
   // Remove duplicates (using areImagesSame for better comparison)
@@ -76,6 +88,12 @@ export function ProductImageGallery({
   // Combine main image with additional images for easy swapping
   const allImages = displayMainImage ? [displayMainImage, ...additionalImages] : additionalImages;
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [imageError, setImageError] = useState(false);
+  
+  // Reset image error when selected image changes
+  useEffect(() => {
+    setImageError(false);
+  }, [selectedImageIndex]);
 
   // Debug: Log images for troubleshooting (remove in production if needed)
   if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
@@ -93,21 +111,25 @@ export function ProductImageGallery({
   return (
     <div className="flex-shrink-0 w-full max-w-80 mx-auto md:mx-0 md:max-w-72 xl:max-w-80 xl:ml-3 2xl:ml-12">
       {/* Main Image */}
-      {currentMainImage && currentMainImage.startsWith("data:image/") ? (
-        <img
-          src={currentMainImage}
-          alt={productName || "Product image"}
-          className="w-full max-w-[340px] sm:w-[340px] aspect-square object-cover rounded-3xl sm:ml-10 sm:mt-1 mx-auto"
-        />
-      ) : currentMainImage ? (
-        <Image
-          src={currentMainImage}
-          alt={productName || "Product image"}
-          width={340}
-          height={340}
-          priority
-          className="w-full max-w-[340px] sm:w-[340px] aspect-square object-cover rounded-3xl sm:ml-10 sm:mt-1 mx-auto"
-        />
+      {currentMainImage && !imageError ? (
+        currentMainImage.startsWith("data:image/") ? (
+          <img
+            src={currentMainImage}
+            alt={productName || "Product image"}
+            className="w-full max-w-[340px] sm:w-[340px] aspect-square object-cover rounded-3xl sm:ml-10 sm:mt-1 mx-auto"
+            onError={() => setImageError(true)}
+          />
+        ) : (
+          <Image
+            src={currentMainImage}
+            alt={productName || "Product image"}
+            width={340}
+            height={340}
+            priority
+            className="w-full max-w-[340px] sm:w-[340px] aspect-square object-cover rounded-3xl sm:ml-10 sm:mt-1 mx-auto"
+            onError={() => setImageError(true)}
+          />
+        )
       ) : (
         <div className="w-full max-w-[340px] sm:w-[340px] aspect-square bg-gray-200 rounded-3xl flex items-center justify-center sm:ml-10 sm:mt-1 mx-auto">
           <span className="text-muted-foreground">No Image</span>
@@ -149,6 +171,11 @@ export function ProductImageGallery({
                       src={img}
                       alt={`${productName} - Image ${index + 2}`}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        // Hide broken image
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                      }}
                     />
                   ) : img ? (
                     <Image
@@ -157,8 +184,17 @@ export function ProductImageGallery({
                       width={96}
                       height={96}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        // Hide broken image
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                      }}
                     />
-                  ) : null}
+                  ) : (
+                    <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                      <span className="text-xs text-muted-foreground">No Image</span>
+                    </div>
+                  )}
                 </div>
               );
             })}

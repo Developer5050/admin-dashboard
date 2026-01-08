@@ -890,6 +890,16 @@ const getProductById = async (req, res) => {
             productObj.images = [];
           }
         }
+        
+        // Ensure images array contains valid strings and filter out empty/invalid entries
+        if (Array.isArray(productObj.images)) {
+          productObj.images = productObj.images.filter(img => img && typeof img === 'string' && img.trim() !== '');
+        }
+        
+        // Set image_url and image fields for frontend compatibility
+        productObj.image_url = productObj.images && productObj.images.length > 0 ? productObj.images[0] : (productObj.image || "");
+        productObj.image = productObj.image_url;
+        
         // Ensure shortDescription exists (for backward compatibility)
         if (!productObj.shortDescription) {
           productObj.shortDescription = "";

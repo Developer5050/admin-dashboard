@@ -143,9 +143,18 @@ export async function fetchProductDetails({ id }: { id: string }): Promise<{ pro
     const categoryValue = backendProduct.category || "";
     
     // Handle images - backend may send images array or image/image_url (for backward compatibility)
-    const productImages = backendProduct.images && Array.isArray(backendProduct.images) && backendProduct.images.length > 0
-      ? backendProduct.images.map((img: string) => getImageUrl(img))
-      : (backendProduct.image || backendProduct.image_url ? [getImageUrl(backendProduct.image || backendProduct.image_url)] : []);
+    // Filter out empty/invalid image URLs
+    let productImages: string[] = [];
+    if (backendProduct.images && Array.isArray(backendProduct.images) && backendProduct.images.length > 0) {
+      productImages = backendProduct.images
+        .filter((img: string) => img && typeof img === 'string' && img.trim() !== '')
+        .map((img: string) => getImageUrl(img));
+    } else if (backendProduct.image_url || backendProduct.image) {
+      const singleImage = backendProduct.image_url || backendProduct.image;
+      if (singleImage && typeof singleImage === 'string' && singleImage.trim() !== '') {
+        productImages = [getImageUrl(singleImage)];
+      }
+    }
     const mainImage = productImages.length > 0 ? productImages[0] : "";
     
     // Use categories object from backend if available, otherwise use category field
