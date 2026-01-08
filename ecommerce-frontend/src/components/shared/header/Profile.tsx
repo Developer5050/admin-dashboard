@@ -7,14 +7,16 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-import { Settings, LogOut, LayoutGrid } from "lucide-react";
+import { Settings, LogOut, LayoutGrid, User } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 
 export default function Profile() {
-  const { profile } = useUser();
+  const { profile, user } = useUser();
 
   const getInitials = (name: string | null | undefined): string => {
     if (!name) return "??";
@@ -40,16 +42,28 @@ export default function Profile() {
         </DropdownMenuTrigger>
 
         <DropdownMenuContent
-          alignOffset={-10}
-          className="flex flex-col"
+          alignOffset={3}
+          className="flex flex-col w-48"
           align="end"
         >
+          <div className="flex items-center px-3 py-2">
+            <User className="mr-3 size-5" />
+            <div className="flex flex-col">
+              <span className="text-[11px] font-semibold leading-tight">
+                {profile?.name || "User"}
+              </span>
+              <span className="text-[11px] text-muted-foreground leading-tight">
+                {user?.email || ""}
+              </span>
+            </div>
+          </div>
+          <DropdownMenuSeparator className="bg-border ml-2 mr-2" />
           <DropdownMenuItem asChild>
             <Link
               href="/"
-              className="w-full justify-start py-3.5 pl-3 pr-8 tracking-wide !cursor-pointer"
+              className="w-full justify-start py-2 pl-3 pr-8 tracking-wide !cursor-pointer"
             >
-              <LayoutGrid className="mr-3 size-5" /> Dashboard
+              <LayoutGrid className="mr-3 size-4" /> <span className="text-[13px]">Dashboard</span>
             </Link>
           </DropdownMenuItem>
 
@@ -58,7 +72,7 @@ export default function Profile() {
               href="/edit-profile"
               className="w-full justify-start py-3.5 pl-3 pr-8 tracking-wide !cursor-pointer"
             >
-              <Settings className="mr-3 size-5" /> Edit Profile
+              <Settings className="mr-3 size-4" /> <span className="text-[13px]">Edit Profile</span>
             </Link>
           </DropdownMenuItem>
 
@@ -68,7 +82,7 @@ export default function Profile() {
                 type="submit"
                 className="w-full justify-start py-3.5 pl-3 pr-8 tracking-wide !cursor-pointer"
               >
-                <LogOut className="mr-3 size-5" /> Log Out
+                <LogOut className="mr-3 size-4" /> <span className="text-[13px]">Log Out</span>
               </button>
             </DropdownMenuItem>
           </form>

@@ -9,7 +9,7 @@ export default function NavMenuToggle() {
   const { toggleSidebar } = useSidebar();
 
   return (
-    <Button variant="ghost" size="icon" onClick={toggleSidebar}>
+    <Button variant="ghost" size="icon" className="border border-border rounded-md hover:bg-accent hover:text-accent-foreground" onClick={toggleSidebar}>
       <Menu />
     </Button>
   );
