@@ -31,7 +31,7 @@ export default function AllContacts() {
   });
 
   if (isLoading || (isFetching && !contacts))
-    return <TableSkeleton perPage={limit} columns={skeletonColumns} />;
+    return <TableSkeleton perPage={limit || 10} columns={skeletonColumns} />;
 
   if (isError || !contacts)
     return (

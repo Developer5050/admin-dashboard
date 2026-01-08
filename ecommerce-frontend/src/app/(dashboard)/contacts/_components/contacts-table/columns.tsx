@@ -1,4 +1,5 @@
-import { Trash2 } from "lucide-react";
+import Link from "next/link";
+import { ZoomIn, Trash2 } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import { toast } from "sonner";
 
@@ -97,6 +98,19 @@ export const getColumns = ({
     cell: ({ row }) => {
       return (
         <div className="flex items-center justify-center gap-1">
+          <TooltipWrapper content="View Contact">
+            <Button
+              size="icon"
+              asChild
+              variant="ghost"
+              className="text-foreground"
+            >
+              <Link href={`/contacts/${row.original.id}`}>
+                <ZoomIn className="size-5" />
+              </Link>
+            </Button>
+          </TooltipWrapper>
+
           {hasPermission("contacts", "canDelete") && (
             <TooltipWrapper content="Delete Contact">
               <Button

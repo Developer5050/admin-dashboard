@@ -16,7 +16,11 @@ export default function ContactFilters() {
   const handleFilter = (e: React.FormEvent) => {
     e.preventDefault();
     const params = new URLSearchParams();
-    if (search) params.set("search", search);
+    
+    // Only add search param if there's a search value
+    if (search && search.trim()) {
+      params.set("search", search.trim());
+    }
 
     params.set("page", "1");
     params.set("limit", searchParams.get("limit") || "10");
@@ -25,7 +29,11 @@ export default function ContactFilters() {
 
   const handleReset = () => {
     setSearch("");
-    router.push("/contacts");
+    // Clear all search params and reset to page 1
+    const params = new URLSearchParams();
+    params.set("page", "1");
+    params.set("limit", searchParams.get("limit") || "10");
+    router.push(`/contacts?${params.toString()}`);
   };
 
   return (
