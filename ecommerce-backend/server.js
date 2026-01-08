@@ -13,6 +13,7 @@ const couponRoutes = require("./routes/couponRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const billingRoutes = require("./routes/billingRoutes");
 const orderRoutes = require("./routes/orderRoutes");
+const contactRoutes = require("./routes/contactRoutes");
 
 const app = express();
 
@@ -38,6 +39,7 @@ app.use("/api/coupons", couponRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/billing", billingRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/contacts", contactRoutes);
 
 // 404 Handler
 app.use((req, res) => {
