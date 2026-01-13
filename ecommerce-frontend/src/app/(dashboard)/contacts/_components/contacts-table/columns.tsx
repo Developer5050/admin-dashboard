@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { ZoomIn, Trash2 } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
-import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,12 +16,6 @@ import { format } from "date-fns";
 
 import { deleteContact } from "@/actions/contacts/deleteContact";
 import { HasPermission } from "@/hooks/use-authorization";
-
-const handleDemoDelete = () => {
-  toast.error("Sorry, this feature is not allowed in demo mode", {
-    position: "top-center",
-  });
-};
 
 export const getColumns = ({
   hasPermission,
@@ -112,28 +105,17 @@ export const getColumns = ({
           </TooltipWrapper>
 
           {hasPermission("contacts", "canDelete") && (
-            <TooltipWrapper content="Delete Contact">
-              <Button
-                onClick={handleDemoDelete}
-                variant="ghost"
-                size="icon"
-                className="text-foreground"
-              >
-                <Trash2 className="size-5" />
-              </Button>
-            </TooltipWrapper>
-
-            // <TableActionAlertDialog
-            //   title={`Delete Contact from ${row.original.name}?`}
-            //   description="This action cannot be undone. This will permanently delete the contact submission from the database."
-            //   tooltipContent="Delete Contact"
-            //   actionButtonText="Delete Contact"
-            //   toastSuccessMessage={`Contact from "${row.original.name}" deleted successfully!`}
-            //   queryKey="contacts"
-            //   action={() => deleteContact(row.original.id)}
-            // >
-            //   <Trash2 className="size-5" />
-            // </TableActionAlertDialog>
+            <TableActionAlertDialog
+              title={`Delete Contact from ${row.original.name}?`}
+              description="This action cannot be undone. This will permanently delete the contact submission from the database."
+              tooltipContent="Delete Contact"
+              actionButtonText="Delete Contact"
+              toastSuccessMessage={`Contact from "${row.original.name}" deleted successfully!`}
+              queryKey="contacts"
+              action={() => deleteContact(row.original.id)}
+            >
+              <Trash2 className="size-5" />
+            </TableActionAlertDialog>
           )}
         </div>
       );

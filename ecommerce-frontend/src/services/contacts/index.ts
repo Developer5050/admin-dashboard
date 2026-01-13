@@ -69,12 +69,22 @@ export async function fetchContacts({
 
     // Apply search filter if provided
     if (search) {
-      const searchLower = search.toLowerCase();
+      const searchLower = search.toLowerCase().trim();
       contacts = contacts.filter(
-        (contact: Contact) =>
-          contact.name.toLowerCase().includes(searchLower) ||
-          contact.email.toLowerCase().includes(searchLower) ||
-          (contact.phone && contact.phone.toLowerCase().includes(searchLower))
+        (contact: Contact) => {
+          // Trim and normalize name for comparison
+          const name = contact.name?.trim().toLowerCase() || "";
+          // Trim email for comparison
+          const email = contact.email?.trim().toLowerCase() || "";
+          // Trim phone for comparison (if exists)
+          const phone = contact.phone?.trim().toLowerCase() || "";
+          
+          return (
+            name.includes(searchLower) ||
+            email.includes(searchLower) ||
+            (phone && phone.includes(searchLower))
+          );
+        }
       );
     }
 
