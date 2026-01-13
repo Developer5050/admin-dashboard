@@ -3,7 +3,7 @@ const router = express.Router();
 const { addOrder, getAllOrders, getOrderById, getOrdersByBillingId, updateOrder, deleteOrder, changeOrderStatus, getOrderStatistics, getSalesStatistics, getWeeklySales, getBestSellers } = require("../controllers/orderControllers");
 const validateRequest = require("../validation/validateRequest");
 const { addOrderSchema, updateOrderSchema, changeStatusSchema } = require("../validation/orderSchemas");
-const authMiddleware = require("../middleware/authMiddleware");
+const { authMiddleware } = require("../middleware/authMiddleware");
 
 // Add Order Route
 router.post("/add-order", authMiddleware, validateRequest(addOrderSchema), addOrder);

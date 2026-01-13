@@ -8,7 +8,7 @@ const fs = require("fs");
 // Signup Controller 
 const signup = async (req, res) => {
     try {
-        const { name, email, password, confirmPassword } = req.body;
+        const { name, email, password, confirmPassword, role } = req.body;
 
         // Check if user already exists
         const existingUser = await User.findOne({ email });
@@ -42,15 +42,24 @@ const signup = async (req, res) => {
             });
         }
 
+        // Validate role if provided
+        if (role && !["admin", "user"].includes(role)) {
+            return res.status(400).json({
+                success: false,
+                message: "Role must be either 'admin' or 'user'",
+            });
+        }
+
         const hashPassword = await bcrypt.hash(password, 10);
         const confirmPasswordHash = await bcrypt.hash(confirmPassword, 10);
 
-        // Create User
+        // Create User (role defaults to "user" if not provided)
         const newUser = await User.create({
             name,
             email,
             password: hashPassword,
-            confirmPassword: confirmPasswordHash,    
+            confirmPassword: confirmPasswordHash,
+            role: role || "user",    
         });
         
         // Generate Token
@@ -74,7 +83,7 @@ const signup = async (req, res) => {
                 _id: newUser._id,
                 name: newUser.name,
                 email: newUser.email,
-                password: newUser.password,
+                role: newUser.role,
             },
             token,
         });
@@ -112,6 +121,15 @@ const login = async (req, res) =>{
             });
         }
         
+        // Auto-promote to admin if no admin exists in database
+        if (!user.role || user.role === "user") {
+            const adminCount = await User.countDocuments({ role: "admin" });
+            if (adminCount === 0) {
+                user.role = "admin";
+                await user.save();
+            }
+        }
+        
         // Generate Token
         const token = generateToken(user._id, user.email, user.name, user.role, user.image_url);
 
@@ -132,6 +150,7 @@ const login = async (req, res) =>{
                 _id: user._id,
                 name: user.name,
                 email: user.email,
+                role: user.role,
             },
             token,
         });
@@ -173,7 +192,7 @@ const getMe = async (req, res) =>{
 const updateProfile = async (req, res) => {
     try {
         const userId = req.user._id;
-        const { name, phone } = req.body;
+        const { name, phone, role } = req.body;
 
         // Get current user to check for old image
         const currentUser = await User.findById(userId);
@@ -188,6 +207,17 @@ const updateProfile = async (req, res) => {
         const updateData = {};
         if (name !== undefined) updateData.name = name;
         if (phone !== undefined) updateData.phone = phone || null;
+        
+        // Allow role update only if current user is admin
+        if (role !== undefined && req.user.role === "admin") {
+            if (!["admin", "user"].includes(role)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Role must be either 'admin' or 'user'",
+                });
+            }
+            updateData.role = role;
+        }
 
         // Handle image upload - if file is uploaded, save it and get URL
         if (req.file) {

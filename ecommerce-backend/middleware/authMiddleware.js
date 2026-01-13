@@ -83,4 +83,33 @@ const authMiddleware = async (req, res, next) => {
     }
 };
 
-module.exports =  authMiddleware;
+// Admin Middleware - Must be used after authMiddleware
+const adminMiddleware = (req, res, next) => {
+    try {
+        // Check if user is authenticated (authMiddleware should run first)
+        if (!req.user) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized: Authentication required"
+            });
+        }
+
+        // Check if user has admin role
+        if (req.user.role !== "admin") {
+            return res.status(403).json({
+                success: false,
+                message: "Forbidden: Admin access required"
+            });
+        }
+
+        next();
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Authorization error",
+            error: error.message
+        });
+    }
+};
+
+module.exports = { authMiddleware, adminMiddleware };

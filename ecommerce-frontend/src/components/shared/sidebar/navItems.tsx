@@ -5,41 +5,56 @@ import { RiCoupon2Line } from "react-icons/ri";
 import { TbTag } from "react-icons/tb";
 import { TbMessageCircle } from "react-icons/tb";
 import { MdOutlineShoppingCart } from "react-icons/md";
+import { UserRole } from "@/contexts/UserContext";
 
-export const navItems = [
+export type NavItem = {
+  title: string;
+  url: string;
+  icon: React.ReactNode;
+  roles?: UserRole[]; // If undefined, accessible to all roles
+};
+
+export const navItems: NavItem[] = [
   {
     title: "Dashboard",
     url: "/",
     icon: <MdOutlineDashboard />,
+    // Accessible to all roles
   },
   {
     title: "Products",
     url: "/products",
     icon: <MdOutlineShoppingCart />,
+    roles: ["admin"], // Admin only
   },
   {
     title: "Categories",
     url: "/categories",
     icon: <TbTag />,
+    roles: ["admin"], // Admin only
   },
   {
     title: "Customers",
     url: "/customers",
     icon: <LuUsers2 />,
+    roles: ["admin"], // Admin only
   },
   {
     title: "Orders",
     url: "/orders",
     icon: <TbTruckDelivery />,
+    // Accessible to all roles
   },
   {
     title: "Coupons",
     url: "/coupons",
     icon: <RiCoupon2Line />,
+    roles: ["admin"], // Admin only
   },
   {
     title: "Contact",
     url: "/contacts",
     icon: <TbMessageCircle />,
+    roles: ["admin"], // Admin only
   },
 ];

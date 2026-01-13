@@ -7,7 +7,7 @@ const {
     deleteContact,
     bulkDeleteContacts,
 } = require("../controllers/contactControllers");
-const authMiddleware = require("../middleware/authMiddleware");
+const { authMiddleware } = require("../middleware/authMiddleware");
 
 // Create Contact Route (public - no auth required for form submission)
 router.post("/create-contact", createContact);

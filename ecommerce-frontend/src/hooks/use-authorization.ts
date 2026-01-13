@@ -52,7 +52,11 @@ export function useAuthorization() {
     return user?.id === staffId;
   };
 
-  return { hasPermission, isSelf, isLoading };
+  const isAdmin = (): boolean => {
+    return profile?.role === "admin";
+  };
+
+  return { hasPermission, isSelf, isLoading, isAdmin };
 }
 
 export type HasPermission = ReturnType<

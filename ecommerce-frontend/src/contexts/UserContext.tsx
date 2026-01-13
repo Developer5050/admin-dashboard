@@ -4,7 +4,7 @@ import { createContext, useContext } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getImageUrl } from "@/helpers/getImageUrl";
 
-export type UserRole = "admin" | "manager" | "staff"; // TODO: Update based on your backend roles
+export type UserRole = "admin" | "user";
 
 type UserProfile = {
   name: string | null;

@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const authMiddleware = require("../middleware/authMiddleware");
+const { authMiddleware } = require("../middleware/authMiddleware");
 const couponUpload = require("../middleware/couponMiddleware");
 const { addCoupon, getAllCoupons, editCoupon, deleteCoupon, bulkDeleteCoupons, validateCoupon } = require("../controllers/couponControllers");
 

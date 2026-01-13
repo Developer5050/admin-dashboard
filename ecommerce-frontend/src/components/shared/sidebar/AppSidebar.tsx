@@ -11,10 +11,24 @@ import Typography from "@/components/ui/typography";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Sidebar, SidebarContent } from "@/components/ui/sidebar";
 import { useSidebar } from "@/components/ui/sidebar";
+import { useUser } from "@/contexts/UserContext";
 
 export default function AppSidebar() {
   const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
+  const { profile } = useUser();
+
+  // Filter nav items based on user role
+  const filteredNavItems = navItems.filter((item) => {
+    // If user is admin, show all pages
+    if (profile?.role === "admin") return true;
+    // If no roles specified, accessible to all
+    if (!item.roles) return true;
+    // If user has no role, hide restricted items
+    if (!profile?.role) return false;
+    // Check if user's role is in allowed roles
+    return item.roles.includes(profile.role);
+  });
 
   return (
     <Sidebar className="shadow-md">
@@ -33,7 +47,7 @@ export default function AppSidebar() {
             </Link>
 
             <ul className="pt-6 flex flex-col gap-y-2">
-              {navItems.map((navItem, index) => (
+              {filteredNavItems.map((navItem, index) => (
                 <li key={`nav-item-${index}`}>
                   <Link
                     onClick={isMobile ? () => setOpenMobile(false) : undefined}

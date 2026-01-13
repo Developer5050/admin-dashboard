@@ -3,7 +3,7 @@ const router = express.Router();
 const { addBilling, getAllBilling, getBillingById, updateBilling, deleteBilling } = require("../controllers/billingControllers");
 const validateRequest = require("../validation/validateRequest");
 const { addBillingSchema } = require("../validation/billingSchemas");
-const authMiddleware = require("../middleware/authMiddleware");
+const { authMiddleware } = require("../middleware/authMiddleware");
 
 // Add Billing Route
 router.post("/add-billing", authMiddleware, validateRequest(addBillingSchema), addBilling);
