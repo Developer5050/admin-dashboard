@@ -54,12 +54,14 @@ const signup = async (req, res) => {
         const confirmPasswordHash = await bcrypt.hash(confirmPassword, 10);
 
         // Create User (role defaults to "user" if not provided)
+        // For admin dashboard, role should be explicitly set to "admin"
+        const userRole = role === "admin" ? "admin" : "user";
         const newUser = await User.create({
             name,
             email,
             password: hashPassword,
             confirmPassword: confirmPasswordHash,
-            role: role || "user",    
+            role: userRole,    
         });
         
         // Generate Token

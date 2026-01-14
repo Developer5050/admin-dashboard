@@ -35,6 +35,7 @@ export async function POST(request: Request) {
         email,
         password,
         confirmPassword,
+        role: "admin", // Set role as admin for admin dashboard signups
       }),
     });
 
