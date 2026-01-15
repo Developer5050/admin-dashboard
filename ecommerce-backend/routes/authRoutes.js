@@ -10,7 +10,7 @@ const profileUpload = require("../middleware/profileUploadMiddleware.js");
 router.post("/signup", validateRequest(signupSchema), signup);
 router.post("/login", validateRequest(loginSchema), login);
 router.get("/me", authMiddleware, getMe);
-router.put("/profile", authMiddleware, profileUpload.single("image"), updateProfile);
+router.put("/update-profile", authMiddleware, profileUpload.single("image"), updateProfile);
 router.post("/logout", logout);
 
 module.exports = router;

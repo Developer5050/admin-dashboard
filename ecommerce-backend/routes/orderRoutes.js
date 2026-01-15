@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { addOrder, getAllOrders, getOrderById, getOrdersByBillingId, updateOrder, deleteOrder, changeOrderStatus, getOrderStatistics, getSalesStatistics, getWeeklySales, getBestSellers } = require("../controllers/orderControllers");
+const { addOrder, getAllOrders, getOrderById, getOrdersByBillingId, updateOrder, deleteOrder, changeOrderStatus, getOrderStatistics, getSalesStatistics, getWeeklySales, getBestSellers, getMyOrders } = require("../controllers/orderControllers");
 const validateRequest = require("../validation/validateRequest");
 const { addOrderSchema, updateOrderSchema, changeStatusSchema } = require("../validation/orderSchemas");
 const { authMiddleware } = require("../middleware/authMiddleware");
@@ -16,6 +16,9 @@ router.get("/get-order-by-id/:id", authMiddleware, getOrderById);
 
 // Get Orders By Billing ID Route
 router.get("/get-orders-by-billing-id/:id", authMiddleware, getOrdersByBillingId);
+
+// Get My Orders Route (logged-in user's orders only)
+router.get("/get-my-orders", authMiddleware, getMyOrders);
 
 // Update Order Route
 router.put("/update-order/:id", authMiddleware, validateRequest(updateOrderSchema), updateOrder);
