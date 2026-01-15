@@ -46,6 +46,9 @@ export default function RecentOrders() {
         endDate,
       }),
     placeholderData: keepPreviousData,
+    refetchOnWindowFocus: false,
+    staleTime: 0,
+    gcTime: 0, // Disable cache so data always fetches fresh
   });
 
   if (isLoading || (isFetching && !orders))

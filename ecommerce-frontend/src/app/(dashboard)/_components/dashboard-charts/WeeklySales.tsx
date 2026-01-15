@@ -25,9 +25,9 @@ export default function WeeklySales() {
   } = useQuery({
     queryKey: ["weekly-sales"],
     queryFn: fetchWeeklySales,
-    refetchInterval: 30000, // Refetch every 30 seconds
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: false,
     staleTime: 0,
+    gcTime: 0, // Disable cache so data always fetches fresh
   });
 
   const gridColor = `rgba(161, 161, 170, ${theme === "light" ? "0.5" : "0.3"})`;
