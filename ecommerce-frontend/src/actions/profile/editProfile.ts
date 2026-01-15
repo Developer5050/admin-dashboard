@@ -62,7 +62,7 @@ export async function editProfile(
 
     // Call backend API with FormData
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-    const response = await fetch(`${apiUrl}/api/auth/profile`, {
+    const response = await fetch(`${apiUrl}/api/auth/update-profile`, {
       method: "PUT",
       headers: {
         Cookie: `token=${token}`,

@@ -4,7 +4,9 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { ArrowLeftIcon } from "lucide-react";
 import { format } from "date-fns";
-
+import { IoMdContact } from "react-icons/io";
+import { MdMessage } from "react-icons/md";
+import { FaCheckCircle } from "react-icons/fa";
 import PageTitle from "@/components/shared/PageTitle";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -107,7 +109,10 @@ export default async function ContactDetail({ params: { id } }: PageParams) {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between flex-wrap gap-2">
-                  <span>Contact Information</span>
+                  <span className="flex items-center gap-2">
+                    <IoMdContact className="w-7 h-7 -ml-7" />
+                    Contact Information
+                  </span>
                   <Badge
                     variant={ContactBadgeVariants[contact.status]}
                     className="text-xs capitalize"
@@ -172,7 +177,10 @@ export default async function ContactDetail({ params: { id } }: PageParams) {
             {/* Message Card */}
             <Card>
               <CardHeader>
-                <CardTitle>Message</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <MdMessage className="w-6 h-6 -ml-7 mt-0.5" />
+                  Message
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {contact.subject && (
@@ -211,7 +219,10 @@ export default async function ContactDetail({ params: { id } }: PageParams) {
             {/* Status Card */}
             <Card>
               <CardHeader>
-                <CardTitle>Status</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <FaCheckCircle className="w-6 h-6 -ml-7" />
+                  Status
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col gap-4">

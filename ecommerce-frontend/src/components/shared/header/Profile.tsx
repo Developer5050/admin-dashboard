@@ -57,7 +57,7 @@ export default function Profile() {
               </span>
             </div>
           </div>
-          <DropdownMenuSeparator className="bg-border ml-2 mr-2" />
+          <DropdownMenuSeparator className="bg-border ml-1 mr-1 h-[0.5px]" />
           <DropdownMenuItem asChild>
             <Link
               href="/"
@@ -70,17 +70,19 @@ export default function Profile() {
           <DropdownMenuItem asChild>
             <Link
               href="/edit-profile"
-              className="w-full justify-start py-3.5 pl-3 pr-8 tracking-wide !cursor-pointer"
+              className="w-full justify-start py-3.5 pl-3 pr-7 tracking-wide !cursor-pointer"
             >
               <Settings className="mr-3 size-4" /> <span className="text-[13px]">Edit Profile</span>
             </Link>
           </DropdownMenuItem>
 
+          <DropdownMenuSeparator className="bg-border ml-1 mr-1 h-[0.5px]" />
+
           <form action="/auth/sign-out" method="post">
             <DropdownMenuItem asChild>
               <button
                 type="submit"
-                className="w-full justify-start py-3.5 pl-3 pr-8 tracking-wide !cursor-pointer"
+                className="w-full justify-start py-3.5 pl-4 pr-8 tracking-wide !cursor-pointer"
               >
                 <LogOut className="mr-3 size-4" /> <span className="text-[13px]">Log Out</span>
               </button>
