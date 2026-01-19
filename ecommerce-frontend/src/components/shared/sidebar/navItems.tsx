@@ -5,6 +5,7 @@ import { RiCoupon2Line } from "react-icons/ri";
 import { TbTag } from "react-icons/tb";
 import { TbMessageCircle } from "react-icons/tb";
 import { MdOutlineShoppingCart } from "react-icons/md";
+import { FaFileInvoice } from "react-icons/fa";
 import { UserRole } from "@/contexts/UserContext";
 
 export type NavItem = {
@@ -44,6 +45,12 @@ export const navItems: NavItem[] = [
     url: "/orders",
     icon: <TbTruckDelivery />,
     // Accessible to all roles
+  },
+  {
+    title: "Invoices",
+    url: "/invoices",
+    icon: <FaFileInvoice />,
+    roles: ["admin"], // Admin only
   },
   {
     title: "Coupons",
