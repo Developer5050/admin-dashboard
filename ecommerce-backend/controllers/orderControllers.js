@@ -130,7 +130,17 @@ const getAllOrders = async (req, res) => {
                 $or: [
                     { firstName: { $regex: searchTerm, $options: "i" } },
                     { lastName: { $regex: searchTerm, $options: "i" } },
-                    { email: { $regex: searchTerm, $options: "i" } }
+                    { email: { $regex: searchTerm, $options: "i" } },
+                    // Search for full name (firstName + lastName combined)
+                    {
+                        $expr: {
+                            $regexMatch: {
+                                input: { $concat: [{ $ifNull: ["$firstName", ""] }, " ", { $ifNull: ["$lastName", ""] }] },
+                                regex: searchTerm,
+                                options: "i"
+                            }
+                        }
+                    }
                 ]
             }).select('_id');
 
