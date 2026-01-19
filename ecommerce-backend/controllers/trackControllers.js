@@ -32,6 +32,7 @@ const trackOrder = async (req, res) => {
             const transformedOrder = {
                 id: order._id.toString(),
                 invoice_no: order.invoiceNo,
+                masked_order_id: order.maskedOrderId,
                 order_time: order.orderTime ? order.orderTime.toISOString() : order.createdAt.toISOString(),
                 total_amount: order.totalAmount,
                 shipping_cost: order.shippingCost,
@@ -116,6 +117,7 @@ const trackOrder = async (req, res) => {
                 return {
                     id: order._id.toString(),
                     invoice_no: order.invoiceNo,
+                    masked_order_id: order.maskedOrderId,
                     order_time: order.orderTime ? order.orderTime.toISOString() : order.createdAt.toISOString(),
                     total_amount: order.totalAmount,
                     shipping_cost: order.shippingCost,

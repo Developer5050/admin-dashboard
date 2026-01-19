@@ -60,7 +60,7 @@ export default function OrderCardList({ orders }: OrderCardListProps) {
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-1 flex-1">
                 <Typography variant="h4" className="font-semibold">
-                  Invoice #{order.invoice_no}
+                  Order Id # {order.masked_order_id || order.invoice_no}
                 </Typography>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <IoTimeOutline className="h-4 w-4" />

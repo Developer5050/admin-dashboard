@@ -23,8 +23,8 @@ export const getColumns = ({
 }) => {
   const columns: ColumnDef<CustomerOrder>[] = [
     {
-      header: "invoice no",
-      cell: ({ row }) => row.original.invoice_no,
+      header: "order no",
+      cell: ({ row }) => row.original.masked_order_id || row.original.invoice_no,
     },
     {
       header: "order time",

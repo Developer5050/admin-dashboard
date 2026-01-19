@@ -41,6 +41,7 @@ export type CustomerOrder = Pick<
   SBOrder,
   | "id"
   | "invoice_no"
+  | "masked_order_id"
   | "order_time"
   | "payment_method"
   | "total_amount"

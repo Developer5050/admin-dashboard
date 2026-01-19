@@ -76,6 +76,11 @@ const orderSchema = new mongoose.Schema({
         required: false,
         unique: true
     },
+    maskedOrderId: {
+        type: String,
+        required: false,
+        unique: true
+    },
     orderTime: {
         type: Date,
         default: Date.now
@@ -86,20 +91,32 @@ const orderSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-// Generate invoice number before saving
+// Helper function to generate random alphanumeric string
+function generateRandomString(length) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+}
+
+// Generate invoice number and masked order ID before saving
 orderSchema.pre('save', async function() {
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const OrderModel = this.constructor;
+    
+    // Generate invoice number if not exists
     if (!this.invoiceNo) {
         // Generate invoice number: INV-YYYYMMDD-XXXXX (5 random digits)
-        const date = new Date();
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
         let random = Math.floor(10000 + Math.random() * 90000);
         this.invoiceNo = `INV-${year}${month}${day}-${random}`;
         
         // Ensure uniqueness
         let isUnique = false;
-        const OrderModel = this.constructor;
         while (!isUnique) {
             const existing = await OrderModel.findOne({ invoiceNo: this.invoiceNo });
             if (!existing) {
@@ -107,6 +124,24 @@ orderSchema.pre('save', async function() {
             } else {
                 random = Math.floor(10000 + Math.random() * 90000);
                 this.invoiceNo = `INV-${year}${month}${day}-${random}`;
+            }
+        }
+    }
+    
+    // Generate masked order ID if not exists: ORD-YYYY-MM-DD-XXXXXX
+    if (!this.maskedOrderId) {
+        let randomString = generateRandomString(6);
+        this.maskedOrderId = `ORD-${year}-${month}-${day}-${randomString}`;
+        
+        // Ensure uniqueness
+        let isUnique = false;
+        while (!isUnique) {
+            const existing = await OrderModel.findOne({ maskedOrderId: this.maskedOrderId });
+            if (!existing) {
+                isUnique = true;
+            } else {
+                randomString = generateRandomString(6);
+                this.maskedOrderId = `ORD-${year}-${month}-${day}-${randomString}`;
             }
         }
     }

@@ -13,6 +13,7 @@ export type Database = {
         Row: {
           id: string;
           invoice_no: string;
+          masked_order_id?: string;
           order_time: string;
           total_amount: number;
           shipping_cost: number;
