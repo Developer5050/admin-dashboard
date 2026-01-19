@@ -30,11 +30,11 @@ export const getColumns = ({
 }) => {
   const columns: ColumnDef<Order>[] = [
     {
-      header: "invoice no",
+      header: "Order No",
       cell: ({ row }) => row.original.invoice_no,
     },
     {
-      header: "customer name",
+      header: "Customer Name",
       cell: ({ row }) => {
         const firstName = row.original.customers?.firstName || "";
         const lastName = row.original.customers?.lastName || "";
@@ -47,7 +47,7 @@ export const getColumns = ({
       },
     },
     {
-      header: "method",
+      header: "Payment Method",
       cell: ({ row }) => (
         <span>{formatPaymentMethod(row.original.payment_method)}</span>
       ),
@@ -57,7 +57,7 @@ export const getColumns = ({
       cell: ({ row }) => formatAmount(row.original.total_amount),
     },
     {
-      header: "status",
+      header: "Status",
       cell: ({ row }) => {
         const status = row.original.status;
 
@@ -72,7 +72,7 @@ export const getColumns = ({
       },
     },
     {
-      header: "action",
+      header: "Action",
       cell: ({ row }) => {
         if (!hasPermission("orders", "canChangeStatus")) {
           return <span className="text-muted-foreground">-</span>;
@@ -98,7 +98,7 @@ export const getColumns = ({
       },
     },
     {
-      header: "invoice",
+      header: "Invoice",
       cell: ({ row }) => {
         return (
           <div className="flex items-center gap-1">
@@ -135,7 +135,7 @@ export const getColumns = ({
 
 export const skeletonColumns: SkeletonColumn[] = [
   {
-    header: "invoice no",
+    header: "Order No",
     cell: <Skeleton className="w-20 h-8" />,
   },
   {
