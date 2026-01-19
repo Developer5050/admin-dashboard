@@ -1,29 +1,28 @@
 const Order = require("../models/Order");
 const Billing = require("../models/Billing");
 
-// Track Order By Invoice Number or Billing Email (Combined)
 const trackOrder = async (req, res) => {
     try {
-        const { invoice_no, email } = req.query;
+        const { masked_order_id, email } = req.query;
 
         // Check if at least one parameter is provided
-        if (!invoice_no && !email) {
+        if (!masked_order_id && !email) {
             return res.status(400).json({
                 success: false,
-                message: "Either Invoice Number or Billing Email is required",
+                message: "Either Masked Order ID or Billing Email is required",
             });
         }
 
-        // If invoice_no is provided, track by invoice number
-        if (invoice_no) {
-            const order = await Order.findOne({ invoiceNo: invoice_no.trim() })
+        // If masked_order_id is provided, track by masked order ID
+        if (masked_order_id) {
+            const order = await Order.findOne({ maskedOrderId: masked_order_id.trim() })
                 .populate('billing', 'firstName lastName email phone address city country company')
                 .populate('orderItems.product', 'name sku salesPrice images description');
 
             if (!order) {
                 return res.status(404).json({
                     success: false,
-                    message: "Order not found with this invoice number",
+                    message: "Order not found with this masked order ID",
                 });
             }
 
