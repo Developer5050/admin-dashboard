@@ -62,8 +62,15 @@ const orderSchema = new mongoose.Schema({
     paymentMethod: {
         type: String,
         required: true,
-        enum: ['credit_card', 'stripe', 'paypal'],
-        default: 'credit_card'
+        enum: ['credit_card', 'credit-card', 'jazzcash', 'easypaisa', 'cod'],
+        default: 'cod',
+        set: function(value) {
+            // Normalize 'credit-card' to 'credit_card' for consistency
+            if (value === 'credit-card') {
+                return 'credit_card';
+            }
+            return value;
+        }
     },
     status: {
         type: String,

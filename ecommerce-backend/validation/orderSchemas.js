@@ -38,11 +38,44 @@ const addOrderSchema = z.object({
         .default(0)
         .optional(),
     paymentMethod: z
-        .enum(['credit_card', 'stripe', 'paypal'], {
-            errorMap: () => ({ message: "Payment method must be one of: credit_card, stripe, paypal" })
-        })
-        .default('credit_card')
-        .optional(),
+        .preprocess(
+            (val) => {
+                // Handle empty string, null, or undefined - return undefined so default applies
+                if (!val || val === '' || val === null) {
+                    return undefined;
+                }
+                // Normalize string to lowercase and replace spaces/special chars
+                if (typeof val === 'string') {
+                    const normalized = val.toLowerCase().trim();
+                    // Map common variations to expected values
+                    const mapping = {
+                        'card': 'credit_card',
+                        'credit card': 'credit_card',
+                        'creditcard': 'credit_card',
+                        'credit-card': 'credit_card', // Normalize hyphen to underscore
+                        'debit card': 'credit_card',
+                        'debit': 'credit_card',
+                        'cc': 'credit_card',
+                        'jazzcash': 'jazzcash',
+                        'jazz cash': 'jazzcash',
+                        'easypaisa': 'easypaisa',
+                        'easy paisa': 'easypaisa',
+                        'easy-paisa': 'easypaisa',
+                        'cod': 'cod',
+                        'cash on delivery': 'cod',
+                        'cash-on-delivery': 'cod',
+                    };
+                    return mapping[normalized] || normalized;
+                }
+                return val;
+            },
+            z
+                .enum(['credit_card', 'jazzcash', 'easypaisa', 'cod'], {
+                    errorMap: () => ({ message: "Payment method must be one of: credit_card, jazzcash, easypaisa, cod" })
+                })
+                .optional()
+                .default('cod')
+        ),
     status: z
         .enum(['pending', 'processing', 'shipped', 'delivered', 'cancelled'], {
             errorMap: () => ({ message: "Status must be one of: pending, processing, shipped, delivered, cancelled" })
@@ -72,10 +105,43 @@ const updateOrderSchema = z.object({
         .min(0, "Discount amount must be non-negative")
         .optional(),
     paymentMethod: z
-        .enum(['cash', 'card', 'online', 'bank_transfer'], {
-            errorMap: () => ({ message: "Payment method must be one of: cash, card, online, bank_transfer" })
-        })
-        .optional(),
+        .preprocess(
+            (val) => {
+                // Handle empty string, null, or undefined
+                if (!val || val === '' || val === null) {
+                    return undefined;
+                }
+                // Normalize string to lowercase and replace spaces/special chars
+                if (typeof val === 'string') {
+                    const normalized = val.toLowerCase().trim();
+                    // Map common variations to expected values
+                    const mapping = {
+                        'card': 'credit_card',
+                        'credit card': 'credit_card',
+                        'creditcard': 'credit_card',
+                        'credit-card': 'credit_card', // Normalize hyphen to underscore
+                        'debit card': 'credit_card',
+                        'debit': 'credit_card',
+                        'cc': 'credit_card',
+                        'jazzcash': 'jazzcash',
+                        'jazz cash': 'jazzcash',
+                        'easypaisa': 'easypaisa',
+                        'easy paisa': 'easypaisa',
+                        'easy-paisa': 'easypaisa',
+                        'cod': 'cod',
+                        'cash on delivery': 'cod',
+                        'cash-on-delivery': 'cod',
+                    };
+                    return mapping[normalized] || normalized;
+                }
+                return val;
+            },
+            z
+                .enum(['credit_card', 'jazzcash', 'easypaisa', 'cod'], {
+                    errorMap: () => ({ message: "Payment method must be one of: credit_card, jazzcash, easypaisa, cod" })
+                })
+                .optional()
+        ),
     status: z
         .enum(['pending', 'processing', 'shipped', 'delivered', 'cancelled'], {
             errorMap: () => ({ message: "Status must be one of: pending, processing, shipped, delivered, cancelled" })

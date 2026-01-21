@@ -91,11 +91,44 @@ const addBillingSchema = z.object({
     .default(0)
     .optional(),
   paymentMethod: z
-    .enum(['credit_card', 'stripe', 'paypal'], {
-      errorMap: () => ({ message: "Payment method must be one of: credit_card, stripe, paypal" })
-    })
-    .default('credit_card')
-    .optional(),
+    .preprocess(
+      (val) => {
+        // Handle empty string, null, or undefined - return undefined so default applies
+        if (!val || val === '' || val === null) {
+          return undefined;
+        }
+        // Normalize string to lowercase and replace spaces/special chars
+        if (typeof val === 'string') {
+          const normalized = val.toLowerCase().trim();
+          // Map common variations to expected values
+          const mapping = {
+            'card': 'credit_card',
+            'credit card': 'credit_card',
+            'creditcard': 'credit_card',
+            'credit-card': 'credit_card', // Normalize hyphen to underscore
+            'debit card': 'credit_card',
+            'debit': 'credit_card',
+            'cc': 'credit_card',
+            'jazzcash': 'jazzcash',
+            'jazz cash': 'jazzcash',
+            'easypaisa': 'easypaisa',
+            'easy paisa': 'easypaisa',
+            'easy-paisa': 'easypaisa',
+            'cod': 'cod',
+            'cash on delivery': 'cod',
+            'cash-on-delivery': 'cod',
+          };
+          return mapping[normalized] || normalized;
+        }
+        return val;
+      },
+      z
+        .enum(['credit_card', 'jazzcash', 'easypaisa', 'cod'], {
+          errorMap: () => ({ message: "Payment method must be one of: credit_card, jazzcash, easypaisa, cod" })
+        })
+        .optional()
+        .default('cod')
+    ),
 });
 
 module.exports = {

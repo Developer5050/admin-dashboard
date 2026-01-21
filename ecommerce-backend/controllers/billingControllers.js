@@ -20,7 +20,7 @@ const addBilling = async (req, res) => {
             orderItems,
             shippingCost = 0,
             discountAmount = 0,
-            paymentMethod = 'credit_card'
+            paymentMethod = 'cod'
         } = req.body;
 
         // Create Billing

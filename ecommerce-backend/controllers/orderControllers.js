@@ -6,7 +6,7 @@ const mongoose = require("mongoose");
 // Add Order
 const addOrder = async (req, res) => {
     try {
-        const { billingId, orderItems, shippingCost = 0, discountAmount = 0, paymentMethod = 'credit_card', status = 'pending', notes = '' } = req.body;
+        const { billingId, orderItems, shippingCost = 0, discountAmount = 0, paymentMethod = 'cod', status = 'pending', notes = '' } = req.body;
 
         // Validate billing exists
         if (!billingId) {
@@ -107,7 +107,12 @@ const getAllOrders = async (req, res) => {
 
         // Filter by payment method
         if (method && method.trim()) {
-            filter.paymentMethod = method.trim();
+            // Normalize 'credit-card' to 'credit_card' for database query
+            let normalizedMethod = method.trim();
+            if (normalizedMethod === 'credit-card') {
+                normalizedMethod = 'credit_card';
+            }
+            filter.paymentMethod = normalizedMethod;
         }
 
         // Filter by date range
@@ -367,7 +372,12 @@ const updateOrder = async (req, res) => {
         }
 
         if (paymentMethod !== undefined) {
-            updateData.paymentMethod = paymentMethod;
+            // Normalize 'credit-card' to 'credit_card' for consistency
+            let normalizedMethod = paymentMethod;
+            if (typeof paymentMethod === 'string' && paymentMethod.toLowerCase().trim() === 'credit-card') {
+                normalizedMethod = 'credit_card';
+            }
+            updateData.paymentMethod = normalizedMethod;
         }
 
         if (status !== undefined) {

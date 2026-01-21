@@ -21,6 +21,13 @@ import { DatePicker } from "@/components/shared/DatePicker";
 import { exportAsCSV } from "@/helpers/exportData";
 import { exportOrders } from "@/actions/orders/exportOrders";
 
+// Normalize payment method for frontend display (convert underscore to hyphen)
+const normalizePaymentMethodForDisplay = (method: string): string => {
+  if (!method) return "";
+  // Convert 'credit_card' to 'credit-card' for frontend dropdown
+  return method.replace(/_/g, "-");
+};
+
 export default function OrderFilters() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -29,7 +36,7 @@ export default function OrderFilters() {
   const [filters, setFilters] = useState({
     search: searchParams.get("search") || "",
     status: searchParams.get("status") || "",
-    method: searchParams.get("method") || "",
+    method: normalizePaymentMethodForDisplay(searchParams.get("method") || ""),
     startDate: searchParams.get("start-date") || "",
     endDate: searchParams.get("end-date") || "",
   });
@@ -128,14 +135,15 @@ export default function OrderFilters() {
             onValueChange={(value) => setFilters({ ...filters, method: value })}
           >
             <SelectTrigger className="capitalize md:basis-1/4">
-              <SelectValue placeholder="Method" />
+              <SelectValue placeholder="Payment Method" />
             </SelectTrigger>
 
             <SelectContent>
               <SelectItem value="all">All</SelectItem>
-              <SelectItem value="credit_card">Credit Card</SelectItem>
-              <SelectItem value="stripe">Stripe</SelectItem>
-              <SelectItem value="paypal">PayPal</SelectItem>
+              <SelectItem value="credit-card">Credit Card / Debit Card</SelectItem>
+              <SelectItem value="jazzcash">JazzCash</SelectItem>
+              <SelectItem value="easypaisa">EasyPaisa</SelectItem>
+              <SelectItem value="cod">COD</SelectItem>
             </SelectContent>
           </Select>
 
