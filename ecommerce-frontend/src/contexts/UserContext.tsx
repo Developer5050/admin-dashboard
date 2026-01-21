@@ -91,6 +91,9 @@ export function UserProvider({
     initialData: initialUserData,
     staleTime: Infinity,
     retry: false,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const value = {

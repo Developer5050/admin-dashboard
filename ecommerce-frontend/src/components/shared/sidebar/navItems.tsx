@@ -20,7 +20,7 @@ export const navItems: NavItem[] = [
     title: "Dashboard",
     url: "/",
     icon: <MdOutlineDashboard />,
-    // Accessible to all roles
+    roles: ["admin"], // Admin only
   },
   {
     title: "Products",
@@ -44,7 +44,7 @@ export const navItems: NavItem[] = [
     title: "Orders",
     url: "/orders",
     icon: <TbTruckDelivery />,
-    // Accessible to all roles
+    roles: ["admin"], // Admin only
   },
   {
     title: "Invoices",
