@@ -815,90 +815,88 @@ const getBestSellers = async (req, res) => {
     }
 }
 
-// Get My Orders (logged-in user's orders only)
+// Get My Orders (ONLY logged-in user's orders)
 const getMyOrders = async (req, res) => {
     try {
-        // Get logged-in user from authMiddleware
-        const user = req.user;
-        
-        if (!user || !user.email) {
+        const userEmail = req.user?.email?.toLowerCase();
+
+        if (!userEmail) {
             return res.status(401).json({
                 success: false,
-                message: "Unauthorized: User not found",
+                message: "Unauthorized user",
             });
         }
 
-        // Find all billing records associated with the user's email
-        const billingRecords = await Billing.find({ email: user.email.toLowerCase() }).select('_id');
-        
-        if (!billingRecords || billingRecords.length === 0) {
+        const orders = await Order.find()
+            .populate({
+                path: "billing",
+                match: { email: userEmail }, // ✅ ONLY logged user email
+                select: "firstName lastName email phone address city country company"
+            })
+            .populate("orderItems.product", "name sku salesPrice images")
+            .sort({ orderTime: -1 });
+
+        // ❗ remove orders whose billing didn't match
+        const userOrders = orders.filter(order => order.billing);
+
+        if (userOrders.length === 0) {
             return res.status(200).json({
                 success: true,
-                message: "No orders found for this user",
+                message: "No orders found",
                 orders: [],
             });
         }
 
-        // Extract billing IDs
-        const billingIds = billingRecords.map(billing => billing._id);
-
-        // Get all orders for these billing IDs
-        const orders = await Order.find({ billing: { $in: billingIds } })
-            .populate('billing', 'firstName lastName email phone address city country company')
-            .populate('orderItems.product', 'name sku salesPrice images')
-            .sort({ orderTime: -1 });
-
-        // Transform orders to match frontend format
-        const transformedOrders = orders.map((order) => {
-            const billingData = order.billing || {};
-            return {
-                id: order._id.toString(),
-                invoice_no: order.invoiceNo,
-                masked_order_id: order.maskedOrderId,
-                order_time: order.orderTime ? order.orderTime.toISOString() : order.createdAt.toISOString(),
-                total_amount: order.totalAmount,
-                shipping_cost: order.shippingCost,
-                payment_method: order.paymentMethod,
-                status: order.status,
-                created_at: order.createdAt.toISOString(),
-                updated_at: order.updatedAt.toISOString(),
-                customers: billingData ? {
-                    name: `${billingData.firstName || ''} ${billingData.lastName || ''}`.trim(),
-                    firstName: billingData.firstName || '',
-                    lastName: billingData.lastName || '',
-                    email: billingData.email || '',
-                    phone: billingData.phone || '',
-                    address: billingData.address || '',
-                    company: billingData.company || ''
-                } : null,
-                order_items: order.orderItems.map(item => ({
-                    quantity: item.quantity,
-                    unit_price: item.unitPrice,
-                    subtotal: item.subtotal,
-                    products: {
-                        name: item.product?.name || 'Unknown Product',
-                        sku: item.product?.sku || '',
-                        salesPrice: item.product?.salesPrice || 0,
-                        images: item.images && item.images.length > 0 ? item.images : (item.product?.images || [])
-                    }
-                }))
-            };
-        });
+        const transformedOrders = userOrders.map(order => ({
+            id: order._id.toString(),
+            invoice_no: order.invoiceNo,
+            masked_order_id: order.maskedOrderId,
+            order_time: order.orderTime
+                ? order.orderTime.toISOString()
+                : order.createdAt.toISOString(),
+            total_amount: order.totalAmount,
+            shipping_cost: order.shippingCost,
+            payment_method: order.paymentMethod,
+            status: order.status,
+            created_at: order.createdAt.toISOString(),
+            updated_at: order.updatedAt.toISOString(),
+            customer: {
+                name: `${order.billing.firstName} ${order.billing.lastName}`,
+                firstName: order.billing.firstName,
+                lastName: order.billing.lastName,
+                email: order.billing.email,
+                phone: order.billing.phone,
+                address: order.billing.address,
+                company: order.billing.company
+            },
+            order_items: order.orderItems.map(item => ({
+                quantity: item.quantity,
+                unit_price: item.unitPrice,
+                subtotal: item.subtotal,
+                product: {
+                    name: item.product?.name || "Unknown Product",
+                    sku: item.product?.sku || "",
+                    salesPrice: item.product?.salesPrice || 0,
+                    images: item.product?.images || []
+                }
+            }))
+        }));
 
         return res.status(200).json({
             success: true,
-            message: "Orders fetched successfully",
+            message: "My orders fetched successfully",
             orders: transformedOrders,
         });
+
     } catch (error) {
         console.error("Get My Orders Error:", error);
         return res.status(500).json({
             success: false,
             message: "Internal server error",
-            error: error.message,
         });
     }
-}
+};
+
 
 module.exports = {
     addOrder,
