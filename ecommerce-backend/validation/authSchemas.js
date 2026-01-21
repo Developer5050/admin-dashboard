@@ -59,6 +59,7 @@ const loginSchema = z.object({
     .min(1, "Please enter your email")
     .email("Please enter a valid email"),
   password: z.string().min(6, "Password should be at least 6 characters"),
+  loginType: z.enum(["admin", "user"]).optional(), // Optional field to indicate login type
 });
 
 module.exports = {

@@ -123,11 +123,37 @@ const login = async (req, res) =>{
             });
         }
         
-        // Auto-promote to admin if no admin exists in database
-        if (!user.role || user.role === "user") {
-            const adminCount = await User.countDocuments({ role: "admin" });
-            if (adminCount === 0) {
+        // Get login type from request (default to "user")
+        const { loginType } = req.body;
+        
+        // Set role based on login type
+        // If logging in from admin dashboard, ensure role is admin (only if user is already admin)
+        // If logging in from user side, ensure role is user (only if user is not already admin)
+        if (loginType === "admin") {
+            // Only allow admin login if user is already an admin
+            if (user.role !== "admin") {
+                return res.status(403).json({
+                    success: false,
+                    message: "Access denied. Admin privileges required.",
+                });
+            }
+            // Ensure role is saved as admin (already checked above, but ensure it's saved)
+            if (user.role !== "admin") {
                 user.role = "admin";
+                await user.save();
+            }
+        } else {
+            // User-side login: ensure role is user (only if user doesn't already have admin role)
+            // Don't change admin users to user role if they login from user side
+            if (!user.role) {
+                user.role = "user";
+                await user.save();
+            } else if (user.role === "admin") {
+                // If user is admin but logging in from user side, keep admin role
+                // Admin users can login from anywhere
+            } else if (user.role !== "user") {
+                // If role exists but is not "user" or "admin", set to "user"
+                user.role = "user";
                 await user.save();
             }
         }

@@ -57,7 +57,9 @@ export default function LoginForm() {
 
   const { mutate, isPending, isSuccess } = useMutation({
     mutationFn: async (formData: FormData) => {
-      await axios.post("/auth/sign-in", formData);
+      // Check if this is a user login from URL parameter, otherwise default to "admin" for admin dashboard
+      const loginType = searchParams.get("type") === "user" ? "user" : "admin";
+      await axios.post("/auth/sign-in", { ...formData, loginType });
     },
     onSuccess: () => {
       toast.success("Login Success!", {

@@ -16,7 +16,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { email, password } = body;
+    const { email, password, loginType } = body;
 
     // Server side form validation
     const { errors } = validateFormData(loginFormSchema, {
@@ -40,6 +40,7 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         email,
         password,
+        loginType: loginType || "user", // Default to "user" if not provided
       }),
     });
 
